@@ -25,6 +25,58 @@ if (!app) {
   throw new Error('Missing #app container');
 }
 
+const suppressGestures = (element: HTMLElement): void => {
+  let lastTapTime = 0;
+  const doubleTapWindowMs = 300;
+
+  const preventDefault = (event: Event): void => {
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+  };
+
+  element.addEventListener(
+    'touchstart',
+    (event: TouchEvent) => {
+      if (event.touches.length > 1) {
+        preventDefault(event);
+      }
+    },
+    { passive: false },
+  );
+  element.addEventListener(
+    'touchmove',
+    (event: TouchEvent) => {
+      preventDefault(event);
+    },
+    { passive: false },
+  );
+  element.addEventListener(
+    'touchend',
+    (event: TouchEvent) => {
+      const now = performance.now();
+      if (now - lastTapTime < doubleTapWindowMs) {
+        preventDefault(event);
+      }
+      lastTapTime = now;
+    },
+    { passive: false },
+  );
+  element.addEventListener(
+    'touchcancel',
+    (event: TouchEvent) => {
+      preventDefault(event);
+    },
+    { passive: false },
+  );
+
+  element.addEventListener('gesturestart', preventDefault, { passive: false });
+  element.addEventListener('gesturechange', preventDefault, { passive: false });
+  element.addEventListener('gestureend', preventDefault, { passive: false });
+};
+
+suppressGestures(app);
+
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true,
@@ -163,6 +215,9 @@ envToggleButton.type = 'button';
 envToggleButton.textContent = 'ENV On';
 envToggleButton.dataset.active = 'true';
 const inputOverlay = document.getElementById('input-overlay') ?? app;
+if (inputOverlay !== app) {
+  suppressGestures(inputOverlay);
+}
 inputOverlay.appendChild(envToggleButton);
 
 const anchorToggleButton = document.createElement('button');
