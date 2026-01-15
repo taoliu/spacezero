@@ -37,6 +37,10 @@ export type WeaponFired = {
   type: 'WeaponFired';
   weaponId: string;
   byEntityId: EntityId;
+  hitEntityId?: EntityId;
+  hitX?: number;
+  hitY?: number;
+  hitZ?: number;
 };
 
 export type DamageRequested = {

@@ -32,6 +32,12 @@ export type WeaponTuning = {
   heatMax: number;
   heatRecoverThreshold: number;
   hitMarkerDuration: number;
+  laserBeamTtlMs: number;
+  laserBeamWidth: number;
+  muzzleFlashTtlMs: number;
+  impactSparkTtlMs: number;
+  missileTrailLength: number;
+  missileTrailTtlMs: number;
 };
 
 export type TargetingTuning = {
@@ -112,6 +118,12 @@ export const tuning: {
     heatMax: 1,
     heatRecoverThreshold: 0.35,
     hitMarkerDuration: 0.1,
+    laserBeamTtlMs: 70,
+    laserBeamWidth: 1,
+    muzzleFlashTtlMs: 100,
+    impactSparkTtlMs: 90,
+    missileTrailLength: 6,
+    missileTrailTtlMs: 240,
   },
   targeting: {
     screenRadiusNdc: 0.6,

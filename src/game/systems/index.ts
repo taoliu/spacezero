@@ -18,6 +18,7 @@ import { AITickScheduler } from './ai/tick_scheduler';
 import { ObjectiveSystem } from './stage/objective_system';
 import { StageSystem } from './stage/stage_system';
 import { HudSystem } from './ui/hud_system';
+import { VfxSystem } from './vfx_system';
 import type { GameContext, System } from './types';
 
 export class SystemScheduler {
@@ -51,7 +52,7 @@ export const createSystemScheduler = (options: {
   camera: Camera;
 }): SystemScheduler => {
   // Explicit system ordering lives here.
-  // Order: Input -> AutoTrace -> Flight -> Stage -> Objectives -> AI Perception -> AI Decision -> AI Steering -> Enemy Movement -> Targeting -> Weapons -> Damage -> HUD -> Debug -> Spin.
+  // Order: Input -> AutoTrace -> Flight -> Stage -> Objectives -> AI Perception -> AI Decision -> AI Steering -> Enemy Movement -> Targeting -> Weapons -> Damage -> VFX -> HUD -> Debug -> Spin.
   const aiScheduler = new AITickScheduler();
   const systems: System[] = [
     new InputSystem(options.inputRoot),
@@ -66,6 +67,7 @@ export const createSystemScheduler = (options: {
     new TargetingSystem(options.camera),
     new WeaponSystem(),
     new DamageSystem(options.scene),
+    new VfxSystem(options.scene),
     new HitMarkerSystem(options.inputRoot),
     new HudSystem({ root: options.inputRoot, camera: options.camera }),
     new DebugAIOverlaySystem(options.inputRoot),

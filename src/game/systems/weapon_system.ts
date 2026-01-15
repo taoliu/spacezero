@@ -20,6 +20,7 @@ export class WeaponSystem implements System {
   private readonly origin = new Vector3();
   private readonly direction = new Vector3();
   private readonly toCenter = new Vector3();
+  private readonly impactPoint = new Vector3();
   private readonly rotationQuat = new Quaternion();
 
   update(ctx: GameContext, dt: number): void {
@@ -85,12 +86,6 @@ export class WeaponSystem implements System {
       weaponSlots.overheated = true;
     }
 
-    ctx.eventBus.publish({
-      type: 'WeaponFired',
-      weaponId: weaponDef.id,
-      byEntityId: playerId,
-    });
-
     this.rotationQuat.setFromEuler(playerTransform.rotation);
     this.direction.set(0, 0, -1).applyQuaternion(this.rotationQuat).normalize();
     this.origin.copy(playerTransform.position);
@@ -118,6 +113,29 @@ export class WeaponSystem implements System {
       this.direction,
       ctx.tuning.weapons.weaponLaserMaxRange,
     );
+    let hitX: number | undefined;
+    let hitY: number | undefined;
+    let hitZ: number | undefined;
+    let hitEntityId: EntityId | undefined;
+
+    if (hit) {
+      this.impactPoint.copy(this.direction).multiplyScalar(hit.distance).add(this.origin);
+      hitX = this.impactPoint.x;
+      hitY = this.impactPoint.y;
+      hitZ = this.impactPoint.z;
+      hitEntityId = hit.entityId;
+    }
+
+    ctx.eventBus.publish({
+      type: 'WeaponFired',
+      weaponId: weaponDef.id,
+      byEntityId: playerId,
+      hitEntityId,
+      hitX,
+      hitY,
+      hitZ,
+    });
+
     if (hit) {
       ctx.eventBus.publish({
         type: 'DamageRequested',
