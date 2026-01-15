@@ -4,7 +4,7 @@ import { INPUT_STATE_COMPONENT } from '../components/input_state';
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from '../components/ship_controller';
 import { TRANSFORM_COMPONENT } from '../components/transform';
 import { VELOCITY_COMPONENT } from '../components/velocity';
-import { tuning, type FlightTuning } from '../tuning';
+import type { FlightTuning } from '../tuning';
 import type { GameContext, System } from './types';
 
 const clamp = (value: number, min: number, max: number): number => {
@@ -50,7 +50,8 @@ export class FlightSystem implements System {
   private readonly rotationQuat = new Quaternion();
 
   update(ctx: GameContext, dt: number): void {
-    const flightTuning = tuning.flight;
+    const flightTuning = ctx.tuning.flight;
+    const lookTuning = ctx.tuning.look;
     const clampedDt = Math.min(dt, flightTuning.maxDt);
 
     if (clampedDt <= 0) {
@@ -83,8 +84,28 @@ export class FlightSystem implements System {
       }
 
       const angularAlpha = expDecay(flightTuning.dampingAngular, clampedDt);
-      const targetYawRate = input.lookX * flightTuning.turnRateYaw;
-      const targetPitchRate = input.lookY * flightTuning.turnRatePitch;
+      const lookSensitivity =
+        input.mode === 'gyro' ? lookTuning.lookSensitivityGyro : lookTuning.lookSensitivityTouch;
+      const smoothing = clamp(lookTuning.lookSmoothing, 0, 1);
+      const smoothAlpha = 1 - smoothing;
+      const maxRate = (lookTuning.maxLookRateDegPerSec * Math.PI) / 180;
+
+      const scaledLookX = input.lookX * lookSensitivity;
+      const scaledLookY = input.lookY * lookSensitivity;
+
+      controller.lookXSmoothed += (scaledLookX - controller.lookXSmoothed) * smoothAlpha;
+      controller.lookYSmoothed += (scaledLookY - controller.lookYSmoothed) * smoothAlpha;
+
+      const targetYawRate = clamp(
+        controller.lookXSmoothed * flightTuning.turnRateYaw,
+        -maxRate,
+        maxRate,
+      );
+      const targetPitchRate = clamp(
+        controller.lookYSmoothed * flightTuning.turnRatePitch,
+        -maxRate,
+        maxRate,
+      );
 
       controller.yawRate += (targetYawRate - controller.yawRate) * angularAlpha;
       controller.pitchRate += (targetPitchRate - controller.pitchRate) * angularAlpha;

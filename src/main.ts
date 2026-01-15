@@ -76,6 +76,8 @@ const shipController: ShipController = {
   yawRate: 0,
   pitchRate: 0,
   wasBoostPressed: false,
+  lookXSmoothed: 0,
+  lookYSmoothed: 0,
 };
 const weaponSlots: WeaponSlots = {
   activeWeaponId: 'laser_mk1',
@@ -242,7 +244,12 @@ const tick = (now: number) => {
     const speedLabel = `Speed: ${shipController.currentSpeed.toFixed(2)}`;
     const boostTimeLabel = `Boost Time: ${shipController.boostRemaining.toFixed(2)}s`;
     const cooldownLabel = `Boost CD: ${shipController.boostCooldown.toFixed(2)}s`;
-    debugOverlay.textContent = `FPS: ${fps.toFixed(1)}\nFrame: ${avgFrameMs.toFixed(1)} ms\n${inputLabel}\n${lookLabel}\n${actionLabel}\n${boostLabel}\n${speedLabel}\n${boostTimeLabel}\n${cooldownLabel}`;
+    const lookModeLabel =
+      inputState.mode === 'gyro'
+        ? `Look Sens: ${tuning.look.lookSensitivityGyro.toFixed(2)}`
+        : `Look Sens: ${tuning.look.lookSensitivityTouch.toFixed(2)}`;
+    const lookSmoothLabel = `Look Smooth: ${tuning.look.lookSmoothing.toFixed(2)}`;
+    debugOverlay.textContent = `FPS: ${fps.toFixed(1)}\nFrame: ${avgFrameMs.toFixed(1)} ms\n${inputLabel}\n${lookLabel}\n${actionLabel}\n${boostLabel}\n${speedLabel}\n${boostTimeLabel}\n${cooldownLabel}\n${lookModeLabel}\n${lookSmoothLabel}`;
     fpsAccumulator = 0;
     fpsFrames = 0;
   }

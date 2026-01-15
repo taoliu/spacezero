@@ -273,12 +273,29 @@ const parseStages = (value: unknown, source: string): StageDef[] => {
         )
       : undefined;
 
+    const spawnDistanceMin = record.spawnDistanceMin !== undefined
+      ? expectNumber(record.spawnDistanceMin, source, `stages.${id}.spawnDistanceMin`)
+      : undefined;
+    const spawnDistanceMax = record.spawnDistanceMax !== undefined
+      ? expectNumber(record.spawnDistanceMax, source, `stages.${id}.spawnDistanceMax`)
+      : undefined;
+
+    if (
+      spawnDistanceMin !== undefined &&
+      spawnDistanceMax !== undefined &&
+      spawnDistanceMax < spawnDistanceMin
+    ) {
+      fail(source, `stages.${id}.spawnDistanceMax`, 'must be >= spawnDistanceMin');
+    }
+
     stages.push({
       id,
       name,
       arena: {
         radius: expectNumber(arena.radius, source, `stages.${id}.arena.radius`),
       },
+      spawnDistanceMin,
+      spawnDistanceMax,
       enemies,
       objectives,
       rewards: {

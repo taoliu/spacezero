@@ -79,11 +79,17 @@ export class StageSystem implements System {
       event.preventDefault();
       this.restartRequested = true;
     });
+    this.restartButton.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+    });
 
     if (this.debugKillEnabled) {
       this.killButton.addEventListener('pointerup', (event) => {
         event.preventDefault();
         this.killRequested = true;
+      });
+      this.killButton.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
       });
     }
   }
@@ -157,7 +163,9 @@ export class StageSystem implements System {
 
     const totalEnemies = stage.enemies.reduce((sum, entry) => sum + entry.count, 0);
     const spawnRadius = Math.max(6, Math.min(14, totalEnemies * 1.6));
-    const forwardDistance = Math.max(10, spawnRadius + 6);
+    const defaultDistance = Math.max(10, spawnRadius + 6);
+    const spawnDistanceMin = stage.spawnDistanceMin ?? defaultDistance;
+    const spawnDistanceMax = stage.spawnDistanceMax ?? spawnDistanceMin;
 
     const playerTransform = this.getPlayerTransform(ctx);
     if (playerTransform) {
@@ -165,14 +173,12 @@ export class StageSystem implements System {
       this.forward.set(0, 0, -1).applyQuaternion(this.rotationQuat);
       this.right.set(1, 0, 0).applyQuaternion(this.rotationQuat);
       this.up.set(0, 1, 0).applyQuaternion(this.rotationQuat);
-      this.spawnCenter
-        .copy(playerTransform.position)
-        .addScaledVector(this.forward, forwardDistance);
+      this.spawnCenter.copy(playerTransform.position);
     } else {
       this.forward.set(0, 0, -1);
       this.right.set(1, 0, 0);
       this.up.set(0, 1, 0);
-      this.spawnCenter.set(0, 0, -forwardDistance);
+      this.spawnCenter.set(0, 0, 0);
     }
 
     let spawnIndex = 0;
@@ -184,12 +190,17 @@ export class StageSystem implements System {
 
       for (let count = 0; count < entry.count; count += 1) {
         const angle = totalEnemies > 0 ? (spawnIndex / totalEnemies) * TWO_PI : 0;
+        const distanceT = totalEnemies > 1 ? spawnIndex / (totalEnemies - 1) : 0;
+        const forwardDistance = spawnDistanceMin + (spawnDistanceMax - spawnDistanceMin) * distanceT;
         this.spawnOffset
           .copy(this.right)
           .multiplyScalar(Math.cos(angle) * spawnRadius)
           .addScaledVector(this.up, Math.sin(angle) * spawnRadius);
 
-        this.spawnPosition.copy(this.spawnCenter).add(this.spawnOffset);
+        this.spawnPosition
+          .copy(this.spawnCenter)
+          .addScaledVector(this.forward, forwardDistance)
+          .add(this.spawnOffset);
         const entityId = this.enemyFactory.spawn(ctx.world, archetype, this.spawnPosition);
         stageState.spawnedEnemyIds.push(entityId);
         ctx.eventBus.publish({

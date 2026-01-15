@@ -91,6 +91,8 @@ export type StageDef = {
   arena: {
     radius: number;
   };
+  spawnDistanceMin?: number;
+  spawnDistanceMax?: number;
   enemies: StageEnemyDef[];
   objectives: StageObjectiveDef[];
   rewards: StageRewardsDef;

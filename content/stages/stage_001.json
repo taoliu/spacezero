@@ -4,8 +4,10 @@
   "arena": {
     "radius": 1200
   },
+  "spawnDistanceMin": 240,
+  "spawnDistanceMax": 320,
   "enemies": [
-    { "archetypeId": "drone_light", "count": 4 }
+    { "archetypeId": "drone_light", "count": 2 }
   ],
   "objectives": [
     { "type": "KillAll" }

@@ -7,6 +7,8 @@ export type ShipController = {
   yawRate: number;
   pitchRate: number;
   wasBoostPressed: boolean;
+  lookXSmoothed: number;
+  lookYSmoothed: number;
 };
 
 export const SHIP_CONTROLLER_COMPONENT: ComponentId<ShipController> = 'shipController';

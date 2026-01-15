@@ -43,11 +43,19 @@ export type TargetingTuning = {
   assistStrength: number;
 };
 
+export type LookTuning = {
+  lookSensitivityTouch: number;
+  lookSensitivityGyro: number;
+  lookSmoothing: number;
+  maxLookRateDegPerSec: number;
+};
+
 export const tuning: {
   flight: FlightTuning;
   ai: AITuning;
   weapons: WeaponTuning;
   targeting: TargetingTuning;
+  look: LookTuning;
 } = {
   flight: {
     baseSpeed: 6,
@@ -89,5 +97,11 @@ export const tuning: {
     maxTargetDistance: 90,
     assistConeDeg: 6,
     assistStrength: 0.3,
+  },
+  look: {
+    lookSensitivityTouch: 0.4,
+    lookSensitivityGyro: 0.25,
+    lookSmoothing: 0.15,
+    maxLookRateDegPerSec: 120,
   },
 };
