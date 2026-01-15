@@ -2,8 +2,11 @@ import * as THREE from 'three';
 import type { EntityId } from './engine/ecs/types';
 import { World } from './engine/ecs/world';
 import { RENDERABLE_COMPONENT } from './game/components/basic';
+import { ECONOMY_COMPONENT, type EconomyState } from './game/components/economy';
 import { INPUT_STATE_COMPONENT, type InputState } from './game/components/input_state';
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/components/ship_controller';
+import { STAGE_RUNTIME_COMPONENT, type StageRunState } from './game/components/stage_runtime';
+import { PLAYER_TAG_COMPONENT } from './game/components/tags';
 import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
 import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
 import { EventBus } from './game/events/bus';
@@ -53,7 +56,7 @@ scene.add(environment.group);
 
 const world = new World();
 const eventBus = new EventBus();
-const scheduler = createSystemScheduler({ inputRoot: app });
+const scheduler = createSystemScheduler({ inputRoot: app, scene });
 
 const shipEntity = world.createEntity();
 const shipTransform: Transform = {
@@ -75,6 +78,7 @@ world.addComponent(shipEntity, RENDERABLE_COMPONENT, { mesh: ship });
 world.addComponent(shipEntity, TRANSFORM_COMPONENT, shipTransform);
 world.addComponent(shipEntity, VELOCITY_COMPONENT, shipVelocity);
 world.addComponent(shipEntity, SHIP_CONTROLLER_COMPONENT, shipController);
+world.addComponent(shipEntity, PLAYER_TAG_COMPONENT, {});
 
 const inputEntity = world.createEntity();
 const inputState: InputState = {
@@ -88,6 +92,23 @@ const inputState: InputState = {
   mode: 'touch',
 };
 world.addComponent(inputEntity, INPUT_STATE_COMPONENT, inputState);
+
+const stageEntity = world.createEntity();
+const stageState: StageRunState = {
+  status: 'Idle',
+  stageId: 'stage_001',
+  startTime: 0,
+  spawnedEnemyIds: [],
+  killedEnemies: 0,
+  remainingEnemies: 0,
+  creditsAwarded: 0,
+  objectiveComplete: false,
+};
+world.addComponent(stageEntity, STAGE_RUNTIME_COMPONENT, stageState);
+
+const economyEntity = world.createEntity();
+const economyState: EconomyState = { credits: 0 };
+world.addComponent(economyEntity, ECONOMY_COMPONENT, economyState);
 
 const envToggleButton = document.createElement('button');
 envToggleButton.className = 'env-toggle';

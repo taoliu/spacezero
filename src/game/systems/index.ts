@@ -1,8 +1,11 @@
+import type { Scene } from 'three';
 import { DebugEventLogSystem } from './debug_event_log_system';
 import { DebugEventPulseSystem } from './debug_event_pulse_system';
 import { FlightSystem } from './flight_system';
 import { InputSystem } from './input_system';
 import { SpinSystem } from './spin_system';
+import { ObjectiveSystem } from './stage/objective_system';
+import { StageSystem } from './stage/stage_system';
 import type { GameContext, System } from './types';
 
 export class SystemScheduler {
@@ -30,12 +33,17 @@ export class SystemScheduler {
   }
 }
 
-export const createSystemScheduler = (options: { inputRoot: HTMLElement }): SystemScheduler => {
+export const createSystemScheduler = (options: {
+  inputRoot: HTMLElement;
+  scene: Scene;
+}): SystemScheduler => {
   // Explicit system ordering lives here.
-  // Order: Input -> Flight -> Debug Events -> Spin (placeholder for future gameplay systems).
+  // Order: Input -> Flight -> Stage -> Objectives -> Debug Events -> Spin.
   const systems: System[] = [
     new InputSystem(options.inputRoot),
     new FlightSystem(),
+    new StageSystem({ root: options.inputRoot, scene: options.scene }),
+    new ObjectiveSystem(),
     new DebugEventPulseSystem(),
     new DebugEventLogSystem(options.inputRoot),
     new SpinSystem(),

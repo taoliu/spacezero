@@ -47,6 +47,7 @@
         white-space: pre;
         pointer-events: none;
         user-select: none;
+        z-index: 12;
       }
       #event-overlay {
         position: absolute;
@@ -60,6 +61,7 @@
         letter-spacing: 0.2px;
         pointer-events: none;
         user-select: none;
+        z-index: 12;
       }
       #loading-overlay {
         position: absolute;
@@ -74,6 +76,40 @@
         letter-spacing: 0.3px;
         pointer-events: none;
         user-select: none;
+        z-index: 30;
+      }
+      #stage-overlay {
+        position: absolute;
+        top: 220px;
+        left: 12px;
+        padding: 8px 10px;
+        background: rgba(6, 10, 18, 0.6);
+        border: 1px solid rgba(135, 160, 200, 0.35);
+        border-radius: 6px;
+        font-size: 11px;
+        letter-spacing: 0.2px;
+        pointer-events: auto;
+        user-select: none;
+        z-index: 20;
+      }
+      .stage-label {
+        white-space: pre;
+      }
+      .stage-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .stage-button {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(120, 160, 220, 0.5);
+        background: rgba(10, 18, 30, 0.7);
+        color: #d7e8ff;
+        font-size: 11px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        touch-action: none;
       }
       #input-overlay {
         position: absolute;
