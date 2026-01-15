@@ -49,6 +49,11 @@ export type EnemyStatsDef = {
 
 export type EnemyAIDef = {
   behavior: string;
+  aggression: number;
+  preferredRange: number;
+  orbitStrength: number;
+  dodgeRate: number;
+  bravery: number;
 };
 
 export type EnemyArchetypeDef = {

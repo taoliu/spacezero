@@ -9,7 +9,12 @@
     },
     "weapons": ["laser_mk1"],
     "ai": {
-      "behavior": "aggressive"
+      "behavior": "aggressive",
+      "aggression": 0.7,
+      "preferredRange": 18,
+      "orbitStrength": 0.9,
+      "dodgeRate": 0.25,
+      "bravery": 0.6
     }
   }
 ]

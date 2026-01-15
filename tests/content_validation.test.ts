@@ -46,7 +46,14 @@ const baseRaw: RawContent = {
       name: 'Light Drone',
       stats: { maxHp: 25, shield: 5, speed: 5 },
       weapons: ['laser_mk1'],
-      ai: { behavior: 'aggressive' },
+      ai: {
+        behavior: 'aggressive',
+        aggression: 0.7,
+        preferredRange: 18,
+        orbitStrength: 0.9,
+        dodgeRate: 0.25,
+        bravery: 0.6,
+      },
     },
   ],
   stages: [
@@ -91,7 +98,14 @@ describe('content validation', () => {
           name: 'Light Drone',
           stats: { maxHp: 25, shield: 5, speed: 5 },
           weapons: ['missing_weapon'],
-          ai: { behavior: 'aggressive' },
+          ai: {
+            behavior: 'aggressive',
+            aggression: 0.7,
+            preferredRange: 18,
+            orbitStrength: 0.9,
+            dodgeRate: 0.25,
+            bravery: 0.6,
+          },
         },
       ],
     } as RawContent;

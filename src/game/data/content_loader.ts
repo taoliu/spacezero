@@ -187,6 +187,11 @@ const parseEnemies = (value: unknown, source: string): EnemyArchetypeDef[] => {
       weapons,
       ai: {
         behavior: expectString(ai.behavior, source, `enemies.${id}.ai.behavior`),
+        aggression: expectNumber(ai.aggression, source, `enemies.${id}.ai.aggression`),
+        preferredRange: expectNumber(ai.preferredRange, source, `enemies.${id}.ai.preferredRange`),
+        orbitStrength: expectNumber(ai.orbitStrength, source, `enemies.${id}.ai.orbitStrength`),
+        dodgeRate: expectNumber(ai.dodgeRate, source, `enemies.${id}.ai.dodgeRate`),
+        bravery: expectNumber(ai.bravery, source, `enemies.${id}.ai.bravery`),
       },
       counters,
     });

@@ -4,6 +4,12 @@ import { DebugEventPulseSystem } from './debug_event_pulse_system';
 import { FlightSystem } from './flight_system';
 import { InputSystem } from './input_system';
 import { SpinSystem } from './spin_system';
+import { DebugAIOverlaySystem } from './ai/debug_ai_overlay_system';
+import { DecisionSystem } from './ai/decision_system';
+import { EnemyMovementSystem } from './ai/enemy_movement_system';
+import { PerceptionSystem } from './ai/perception_system';
+import { SteeringSystem } from './ai/steering_system';
+import { AITickScheduler } from './ai/tick_scheduler';
 import { ObjectiveSystem } from './stage/objective_system';
 import { StageSystem } from './stage/stage_system';
 import type { GameContext, System } from './types';
@@ -38,12 +44,18 @@ export const createSystemScheduler = (options: {
   scene: Scene;
 }): SystemScheduler => {
   // Explicit system ordering lives here.
-  // Order: Input -> Flight -> Stage -> Objectives -> Debug Events -> Spin.
+  // Order: Input -> Flight -> Stage -> Objectives -> AI Perception -> AI Decision -> AI Steering -> Enemy Movement -> Debug -> Spin.
+  const aiScheduler = new AITickScheduler();
   const systems: System[] = [
     new InputSystem(options.inputRoot),
     new FlightSystem(),
     new StageSystem({ root: options.inputRoot, scene: options.scene }),
     new ObjectiveSystem(),
+    new PerceptionSystem(aiScheduler),
+    new DecisionSystem(aiScheduler),
+    new SteeringSystem(aiScheduler),
+    new EnemyMovementSystem(),
+    new DebugAIOverlaySystem(options.inputRoot),
     new DebugEventPulseSystem(),
     new DebugEventLogSystem(options.inputRoot),
     new SpinSystem(),

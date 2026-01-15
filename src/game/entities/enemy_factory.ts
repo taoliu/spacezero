@@ -10,10 +10,13 @@ import {
 import type { World } from '../../engine/ecs/world';
 import { RENDERABLE_COMPONENT } from '../components/basic';
 import { AI_STATE_COMPONENT } from '../components/ai_state';
+import { BLACKBOARD_COMPONENT } from '../components/blackboard';
 import { HEALTH_COMPONENT } from '../components/health';
 import { SHIELD_COMPONENT } from '../components/shield';
+import { STEERING_INTENT_COMPONENT } from '../components/steering_intent';
 import { ENEMY_TAG_COMPONENT } from '../components/tags';
 import { TRANSFORM_COMPONENT } from '../components/transform';
+import { VELOCITY_COMPONENT } from '../components/velocity';
 import type { EnemyArchetypeDef } from '../data/schemas';
 
 export class EnemyFactory {
@@ -55,10 +58,27 @@ export class EnemyFactory {
         maxValue: archetype.stats.shield,
       });
     }
-    world.addComponent(entityId, AI_STATE_COMPONENT, { behavior: archetype.ai.behavior });
+    world.addComponent(entityId, AI_STATE_COMPONENT, {
+      archetypeId: archetype.id,
+      currentAction: 'Approach',
+      actionUntil: 0,
+      rngState: (entityId * 9301 + 49297) % 233280,
+    });
+    world.addComponent(entityId, BLACKBOARD_COMPONENT, {
+      playerVisible: false,
+      playerDistance: Infinity,
+      relAngle: 0,
+      lastSeenTime: 0,
+    });
+    world.addComponent(entityId, STEERING_INTENT_COMPONENT, {
+      desiredVelocity: new Vector3(),
+    });
     world.addComponent(entityId, TRANSFORM_COMPONENT, {
       position: position.clone(),
       rotation: new Euler(0, 0, 0, 'YXZ'),
+    });
+    world.addComponent(entityId, VELOCITY_COMPONENT, {
+      linear: new Vector3(),
     });
     world.addComponent(entityId, RENDERABLE_COMPONENT, { mesh });
 

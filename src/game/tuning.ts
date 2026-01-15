@@ -13,7 +13,21 @@ export type FlightTuning = {
   maxDt: number;
 };
 
-export const tuning: { flight: FlightTuning } = {
+export type AITuning = {
+  aiPerceptionHz: number;
+  aiDecisionHz: number;
+  aiDecisionLodHz: number;
+  aiSteeringHz: number;
+  aiLodDistance: number;
+  aiMinActionDurationSec: number;
+  aiEvadeDurationSec: number;
+  aiFovDegrees: number;
+  aiMoveDamping: number;
+  aiTurnRate: number;
+  aiOrbitRadialFactor: number;
+};
+
+export const tuning: { flight: FlightTuning; ai: AITuning } = {
   flight: {
     baseSpeed: 6,
     strafeSpeed: 3.2,
@@ -27,5 +41,18 @@ export const tuning: { flight: FlightTuning } = {
     boostCooldownSec: 2.6,
     maxPitch: 1.2,
     maxDt: 0.05,
+  },
+  ai: {
+    aiPerceptionHz: 10,
+    aiDecisionHz: 5,
+    aiDecisionLodHz: 2,
+    aiSteeringHz: 40,
+    aiLodDistance: 80,
+    aiMinActionDurationSec: 0.9,
+    aiEvadeDurationSec: 0.5,
+    aiFovDegrees: 120,
+    aiMoveDamping: 5,
+    aiTurnRate: 3,
+    aiOrbitRadialFactor: 0.6,
   },
 };
