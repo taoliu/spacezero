@@ -11,3 +11,8 @@ Webpage based FPV game made by Vinny, AI and me
 - iOS Safari requires a user gesture to request gyro access.
 - Tap `Gyro: Off` to trigger the permission prompt, then tap `Calibrate` while holding the phone steady.
 - Dual sticks are bottom-left (move) and bottom-right (look); buttons are above the right stick.
+
+## Deployment (GitHub Pages)
+- Enable Pages in repo settings: Settings → Pages → Source: GitHub Actions.
+- Push to `main` to trigger the deploy workflow.
+- Deployed URL: `https://<user>.github.io/<repo>/`
