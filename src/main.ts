@@ -1,12 +1,11 @@
 import * as THREE from 'three';
 import type { EntityId } from './engine/ecs/types';
 import { World } from './engine/ecs/world';
-import {
-  RENDERABLE_COMPONENT,
-  ROTATION_COMPONENT,
-  SPIN_COMPONENT,
-} from './game/components/basic';
+import { RENDERABLE_COMPONENT } from './game/components/basic';
 import { INPUT_STATE_COMPONENT, type InputState } from './game/components/input_state';
+import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/components/ship_controller';
+import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
+import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
 import { createSystemScheduler } from './game/systems';
 
 const app = document.getElementById('app');
@@ -49,13 +48,25 @@ const context = { world };
 const scheduler = createSystemScheduler({ inputRoot: app });
 
 const shipEntity = world.createEntity();
+const shipTransform: Transform = {
+  position: new THREE.Vector3(0, 0, 0),
+  rotation: new THREE.Euler(0, 0, 0, 'YXZ'),
+};
+const shipVelocity: Velocity = {
+  linear: new THREE.Vector3(),
+};
+const shipController: ShipController = {
+  boostRemaining: 0,
+  boostCooldown: 0,
+  currentSpeed: 0,
+  yawRate: 0,
+  pitchRate: 0,
+  wasBoostPressed: false,
+};
 world.addComponent(shipEntity, RENDERABLE_COMPONENT, { mesh: ship });
-world.addComponent(shipEntity, ROTATION_COMPONENT, { x: 0, y: 0, z: 0 });
-world.addComponent(shipEntity, SPIN_COMPONENT, {
-  speedX: 0.3,
-  speedY: 0.6,
-  speedZ: 0,
-});
+world.addComponent(shipEntity, TRANSFORM_COMPONENT, shipTransform);
+world.addComponent(shipEntity, VELOCITY_COMPONENT, shipVelocity);
+world.addComponent(shipEntity, SHIP_CONTROLLER_COMPONENT, shipController);
 
 const inputEntity = world.createEntity();
 const inputState: InputState = {
@@ -82,6 +93,9 @@ let lastTime = performance.now();
 let fpsAccumulator = 0;
 let fpsFrames = 0;
 const renderables: EntityId[] = [];
+const cameraOffset = new THREE.Vector3(0, 0.12, 0.25);
+const cameraOffsetWorld = new THREE.Vector3();
+const cameraQuat = new THREE.Quaternion();
 
 const resize = () => {
   const width = window.innerWidth;
@@ -106,16 +120,24 @@ const tick = (now: number) => {
 
   scheduler.update(context, dt);
 
-  world.query([RENDERABLE_COMPONENT, ROTATION_COMPONENT], renderables);
+  world.query([RENDERABLE_COMPONENT, TRANSFORM_COMPONENT], renderables);
   for (const entityId of renderables) {
     const renderable = world.getComponent(entityId, RENDERABLE_COMPONENT);
-    const rotation = world.getComponent(entityId, ROTATION_COMPONENT);
+    const transform = world.getComponent(entityId, TRANSFORM_COMPONENT);
 
-    if (!renderable || !rotation) {
+    if (!renderable || !transform) {
       continue;
     }
 
-    renderable.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+    renderable.mesh.position.copy(transform.position);
+    renderable.mesh.rotation.copy(transform.rotation);
+
+    if (entityId === shipEntity) {
+      cameraQuat.setFromEuler(transform.rotation);
+      cameraOffsetWorld.copy(cameraOffset).applyQuaternion(cameraQuat);
+      camera.position.copy(transform.position).add(cameraOffsetWorld);
+      camera.quaternion.copy(cameraQuat);
+    }
   }
 
   renderer.render(scene, camera);
@@ -130,7 +152,10 @@ const tick = (now: number) => {
     const lookLabel = `Look: ${inputState.lookX.toFixed(2)}, ${inputState.lookY.toFixed(2)}`;
     const actionLabel = `Fire: ${inputState.firePrimary ? '1' : '0'} / ${inputState.fireSecondary ? '1' : '0'}`;
     const boostLabel = `Boost: ${inputState.boost ? '1' : '0'} | ${inputState.mode}`;
-    debugOverlay.textContent = `FPS: ${fps.toFixed(1)}\nFrame: ${avgFrameMs.toFixed(1)} ms\n${inputLabel}\n${lookLabel}\n${actionLabel}\n${boostLabel}`;
+    const speedLabel = `Speed: ${shipController.currentSpeed.toFixed(2)}`;
+    const boostTimeLabel = `Boost Time: ${shipController.boostRemaining.toFixed(2)}s`;
+    const cooldownLabel = `Boost CD: ${shipController.boostCooldown.toFixed(2)}s`;
+    debugOverlay.textContent = `FPS: ${fps.toFixed(1)}\nFrame: ${avgFrameMs.toFixed(1)} ms\n${inputLabel}\n${lookLabel}\n${actionLabel}\n${boostLabel}\n${speedLabel}\n${boostTimeLabel}\n${cooldownLabel}`;
     fpsAccumulator = 0;
     fpsFrames = 0;
   }

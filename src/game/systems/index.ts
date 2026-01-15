@@ -1,3 +1,4 @@
+import { FlightSystem } from './flight_system';
 import { InputSystem } from './input_system';
 import { SpinSystem } from './spin_system';
 import type { GameContext, System } from './types';
@@ -24,8 +25,8 @@ export class SystemScheduler {
 
 export const createSystemScheduler = (options: { inputRoot: HTMLElement }): SystemScheduler => {
   // Explicit system ordering lives here.
-  // Order: Input -> Spin (placeholder for future gameplay systems).
-  const systems: System[] = [new InputSystem(options.inputRoot), new SpinSystem()];
+  // Order: Input -> Flight -> Spin (placeholder for future gameplay systems).
+  const systems: System[] = [new InputSystem(options.inputRoot), new FlightSystem(), new SpinSystem()];
   return new SystemScheduler(systems);
 };
 

@@ -1,24 +1,25 @@
 import type { EntityId } from '../../engine/ecs/types';
-import { ROTATION_COMPONENT, SPIN_COMPONENT } from '../components/basic';
+import { SPIN_COMPONENT } from '../components/basic';
+import { TRANSFORM_COMPONENT } from '../components/transform';
 import type { GameContext, System } from './types';
 
 export class SpinSystem implements System {
   private readonly entities: EntityId[] = [];
 
   update(ctx: GameContext, dt: number): void {
-    ctx.world.query([ROTATION_COMPONENT, SPIN_COMPONENT], this.entities);
+    ctx.world.query([TRANSFORM_COMPONENT, SPIN_COMPONENT], this.entities);
 
     for (const entityId of this.entities) {
-      const rotation = ctx.world.getComponent(entityId, ROTATION_COMPONENT);
+      const transform = ctx.world.getComponent(entityId, TRANSFORM_COMPONENT);
       const spin = ctx.world.getComponent(entityId, SPIN_COMPONENT);
 
-      if (!rotation || !spin) {
+      if (!transform || !spin) {
         continue;
       }
 
-      rotation.x += spin.speedX * dt;
-      rotation.y += spin.speedY * dt;
-      rotation.z += spin.speedZ * dt;
+      transform.rotation.x += spin.speedX * dt;
+      transform.rotation.y += spin.speedY * dt;
+      transform.rotation.z += spin.speedZ * dt;
     }
   }
 }
