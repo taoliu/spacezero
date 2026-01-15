@@ -47,6 +47,9 @@ export type TargetingTuning = {
   maxAcquireDistance: number;
   assistConeDeg: number;
   assistStrength: number;
+  aimAssistConeDeg: number;
+  aimAssistMaxDistance: number;
+  aimAssistStrength: number;
 };
 
 export type AutoTraceTuning = {
@@ -132,6 +135,9 @@ export const tuning: {
     maxAcquireDistance: 2000,
     assistConeDeg: 8,
     assistStrength: 0.3,
+    aimAssistConeDeg: 5,
+    aimAssistMaxDistance: 1500,
+    aimAssistStrength: 0.6,
   },
   autoTrace: {
     autoTraceMaxTurnDegPerSec: 90,

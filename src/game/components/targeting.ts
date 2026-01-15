@@ -3,6 +3,7 @@ import type { ComponentId } from '../../engine/ecs/types';
 
 export type Targeting = {
   currentTargetId: EntityId | null;
+  currentTargetInWindow: boolean;
   lockProgress: number;
   lastSwitchTime: number;
 };

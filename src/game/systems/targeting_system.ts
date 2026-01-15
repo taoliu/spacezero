@@ -1,4 +1,4 @@
-import { Camera, Vector3 } from 'three';
+import { Camera, Quaternion, Vector3 } from 'three';
 import type { EntityId } from '../../engine/ecs/types';
 import { ENEMY_TAG_COMPONENT, PLAYER_TAG_COMPONENT } from '../components/tags';
 import { TARGETING_COMPONENT } from '../components/targeting';
@@ -36,6 +36,8 @@ export class TargetingSystem implements System {
   private readonly enemyEntities: EntityId[] = [];
   private readonly projected = new Vector3();
   private readonly toEnemy = new Vector3();
+  private readonly forward = new Vector3();
+  private readonly rotationQuat = new Quaternion();
   private time = 0;
 
   constructor(camera: Camera) {
@@ -47,6 +49,8 @@ export class TargetingSystem implements System {
     const tuning = ctx.tuning.targeting;
     const maxDistance = tuning.maxAcquireDistance;
     const screenRadiusSq = tuning.screenRadiusNdc * tuning.screenRadiusNdc;
+    const assistMaxDistance = tuning.aimAssistMaxDistance;
+    const assistCos = Math.cos((tuning.aimAssistConeDeg * Math.PI) / 180);
 
     ctx.world.query([PLAYER_TAG_COMPONENT, TRANSFORM_COMPONENT, TARGETING_COMPONENT], this.playerEntities);
     const playerId = this.playerEntities[0];
@@ -59,6 +63,9 @@ export class TargetingSystem implements System {
     if (!playerTransform || !targeting) {
       return;
     }
+
+    this.rotationQuat.setFromEuler(playerTransform.rotation);
+    this.forward.set(0, 0, -1).applyQuaternion(this.rotationQuat).normalize();
 
     ctx.world.query([ENEMY_TAG_COMPONENT, TRANSFORM_COMPONENT], this.enemyEntities);
 
@@ -99,6 +106,7 @@ export class TargetingSystem implements System {
     }
 
     let currentScore = Infinity;
+    let currentInWindow = false;
     const currentTargetId = targeting.currentTargetId;
     const currentTargetAlive =
       currentTargetId !== null && ctx.world.isAlive(currentTargetId);
@@ -118,12 +126,18 @@ export class TargetingSystem implements System {
             const screenDistSq = ndcX * ndcX + ndcY * ndcY;
             if (screenDistSq <= screenRadiusSq) {
               currentScore = computeScreenScore(ndcX, ndcY, ndcZ);
+              if (distance <= assistMaxDistance) {
+                this.toEnemy.multiplyScalar(1 / distance);
+                const dot = this.forward.dot(this.toEnemy);
+                currentInWindow = dot >= assistCos;
+              }
             }
           }
         }
       }
     }
 
+    targeting.currentTargetInWindow = currentInWindow;
     const timeSinceSwitch = this.time - targeting.lastSwitchTime;
 
     if (bestEntity !== null && shouldSwitchTarget(

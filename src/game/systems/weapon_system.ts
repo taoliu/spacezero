@@ -8,6 +8,7 @@ import { WEAPON_SLOTS_COMPONENT } from '../components/weapon_slots';
 import { ENEMY_TAG_COMPONENT, PLAYER_TAG_COMPONENT } from '../components/tags';
 import { TRANSFORM_COMPONENT } from '../components/transform';
 import type { WeaponDef } from '../data/schemas';
+import { computeAssistedAim } from '../utils/aim_assist';
 import type { GameContext, System } from './types';
 
 export class WeaponSystem implements System {
@@ -91,18 +92,20 @@ export class WeaponSystem implements System {
     this.origin.copy(playerTransform.position);
 
     const assistTargetId = targeting.currentTargetId;
-    if (assistTargetId !== null && ctx.world.isAlive(assistTargetId)) {
+    if (targeting.currentTargetInWindow && assistTargetId !== null && ctx.world.isAlive(assistTargetId)) {
       const targetTransform = ctx.world.getComponent(assistTargetId, TRANSFORM_COMPONENT);
       if (targetTransform) {
         this.toCenter.copy(targetTransform.position).sub(this.origin);
         const distance = this.toCenter.length();
-        if (distance > 0.01) {
+        if (distance > 0.01 && distance <= ctx.tuning.targeting.aimAssistMaxDistance) {
           this.toCenter.multiplyScalar(1 / distance);
-          const assistCos = Math.cos((ctx.tuning.targeting.assistConeDeg * Math.PI) / 180);
-          const dot = this.direction.dot(this.toCenter);
-          if (dot >= assistCos) {
-            this.direction.lerp(this.toCenter, ctx.tuning.targeting.assistStrength).normalize();
-          }
+          computeAssistedAim(
+            this.direction,
+            this.toCenter,
+            ctx.tuning.targeting.aimAssistStrength,
+            ctx.tuning.targeting.aimAssistConeDeg,
+            this.direction,
+          );
         }
       }
     }

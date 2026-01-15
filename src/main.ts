@@ -163,6 +163,7 @@ const autoTrace: AutoTrace = {
 };
 const targeting: Targeting = {
   currentTargetId: null,
+  currentTargetInWindow: false,
   lockProgress: 0,
   lastSwitchTime: 0,
 };
