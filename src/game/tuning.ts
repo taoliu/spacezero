@@ -34,7 +34,21 @@ export type WeaponTuning = {
   hitMarkerDuration: number;
 };
 
-export const tuning: { flight: FlightTuning; ai: AITuning; weapons: WeaponTuning } = {
+export type TargetingTuning = {
+  screenRadius: number;
+  stickyTimeSec: number;
+  switchScoreFactor: number;
+  maxTargetDistance: number;
+  assistConeDeg: number;
+  assistStrength: number;
+};
+
+export const tuning: {
+  flight: FlightTuning;
+  ai: AITuning;
+  weapons: WeaponTuning;
+  targeting: TargetingTuning;
+} = {
   flight: {
     baseSpeed: 6,
     strafeSpeed: 3.2,
@@ -67,5 +81,13 @@ export const tuning: { flight: FlightTuning; ai: AITuning; weapons: WeaponTuning
     heatMax: 1,
     heatRecoverThreshold: 0.35,
     hitMarkerDuration: 0.1,
+  },
+  targeting: {
+    screenRadius: 0.45,
+    stickyTimeSec: 0.7,
+    switchScoreFactor: 0.7,
+    maxTargetDistance: 90,
+    assistConeDeg: 6,
+    assistStrength: 0.3,
   },
 };

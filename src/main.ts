@@ -8,6 +8,7 @@ import { INPUT_STATE_COMPONENT, type InputState } from './game/components/input_
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/components/ship_controller';
 import { STAGE_RUNTIME_COMPONENT, type StageRunState } from './game/components/stage_runtime';
 import { PLAYER_TAG_COMPONENT } from './game/components/tags';
+import { TARGETING_COMPONENT, type Targeting } from './game/components/targeting';
 import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
 import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
 import { WEAPON_SLOTS_COMPONENT, type WeaponSlots } from './game/components/weapon_slots';
@@ -58,7 +59,7 @@ scene.add(environment.group);
 
 const world = new World();
 const eventBus = new EventBus();
-const scheduler = createSystemScheduler({ inputRoot: app, scene });
+const scheduler = createSystemScheduler({ inputRoot: app, scene, camera });
 
 const shipEntity = world.createEntity();
 const shipTransform: Transform = {
@@ -82,11 +83,17 @@ const weaponSlots: WeaponSlots = {
   heat: 0,
   overheated: false,
 };
+const targeting: Targeting = {
+  currentTargetId: null,
+  lockProgress: 0,
+  lastSwitchTime: 0,
+};
 world.addComponent(shipEntity, RENDERABLE_COMPONENT, { mesh: ship });
 world.addComponent(shipEntity, TRANSFORM_COMPONENT, shipTransform);
 world.addComponent(shipEntity, VELOCITY_COMPONENT, shipVelocity);
 world.addComponent(shipEntity, SHIP_CONTROLLER_COMPONENT, shipController);
 world.addComponent(shipEntity, WEAPON_SLOTS_COMPONENT, weaponSlots);
+world.addComponent(shipEntity, TARGETING_COMPONENT, targeting);
 world.addComponent(shipEntity, PLAYER_TAG_COMPONENT, {});
 
 const inputEntity = world.createEntity();

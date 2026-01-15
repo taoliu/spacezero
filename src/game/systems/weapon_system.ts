@@ -3,6 +3,7 @@ import type { EntityId } from '../../engine/ecs/types';
 import { HIT_MARKER_COMPONENT } from '../components/hit_marker';
 import { HIT_SPHERE_COMPONENT } from '../components/hit_sphere';
 import { INPUT_STATE_COMPONENT } from '../components/input_state';
+import { TARGETING_COMPONENT } from '../components/targeting';
 import { WEAPON_SLOTS_COMPONENT } from '../components/weapon_slots';
 import { ENEMY_TAG_COMPONENT, PLAYER_TAG_COMPONENT } from '../components/tags';
 import { TRANSFORM_COMPONENT } from '../components/transform';
@@ -38,7 +39,10 @@ export class WeaponSystem implements System {
       return;
     }
 
-    ctx.world.query([PLAYER_TAG_COMPONENT, TRANSFORM_COMPONENT, WEAPON_SLOTS_COMPONENT], this.playerEntities);
+    ctx.world.query(
+      [PLAYER_TAG_COMPONENT, TRANSFORM_COMPONENT, WEAPON_SLOTS_COMPONENT, TARGETING_COMPONENT],
+      this.playerEntities,
+    );
     const playerId = this.playerEntities[0];
     if (!playerId) {
       return;
@@ -46,7 +50,8 @@ export class WeaponSystem implements System {
 
     const playerTransform = ctx.world.getComponent(playerId, TRANSFORM_COMPONENT);
     const weaponSlots = ctx.world.getComponent(playerId, WEAPON_SLOTS_COMPONENT);
-    if (!playerTransform || !weaponSlots) {
+    const targeting = ctx.world.getComponent(playerId, TARGETING_COMPONENT);
+    if (!playerTransform || !weaponSlots || !targeting) {
       return;
     }
 
@@ -89,6 +94,23 @@ export class WeaponSystem implements System {
     this.rotationQuat.setFromEuler(playerTransform.rotation);
     this.direction.set(0, 0, -1).applyQuaternion(this.rotationQuat).normalize();
     this.origin.copy(playerTransform.position);
+
+    const assistTargetId = targeting.currentTargetId;
+    if (assistTargetId !== null && ctx.world.isAlive(assistTargetId)) {
+      const targetTransform = ctx.world.getComponent(assistTargetId, TRANSFORM_COMPONENT);
+      if (targetTransform) {
+        this.toCenter.copy(targetTransform.position).sub(this.origin);
+        const distance = this.toCenter.length();
+        if (distance > 0.01) {
+          this.toCenter.multiplyScalar(1 / distance);
+          const assistCos = Math.cos((ctx.tuning.targeting.assistConeDeg * Math.PI) / 180);
+          const dot = this.direction.dot(this.toCenter);
+          if (dot >= assistCos) {
+            this.direction.lerp(this.toCenter, ctx.tuning.targeting.assistStrength).normalize();
+          }
+        }
+      }
+    }
 
     const hit = this.findNearestHit(ctx, this.origin, this.direction, ctx.tuning.weapons.laserRange);
     if (hit) {
