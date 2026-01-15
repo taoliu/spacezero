@@ -48,6 +48,10 @@ export type LookTuning = {
   lookSensitivityGyro: number;
   lookSmoothing: number;
   maxLookRateDegPerSec: number;
+  invertLookXTouch: boolean;
+  invertLookYTouch: boolean;
+  invertLookXGyro: boolean;
+  invertLookYGyro: boolean;
 };
 
 export const tuning: {
@@ -103,5 +107,9 @@ export const tuning: {
     lookSensitivityGyro: 0.25,
     lookSmoothing: 0.15,
     maxLookRateDegPerSec: 120,
+    invertLookXTouch: false,
+    invertLookYTouch: false,
+    invertLookXGyro: false,
+    invertLookYGyro: false,
   },
 };

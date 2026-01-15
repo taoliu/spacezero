@@ -5,6 +5,7 @@ import { SHIP_CONTROLLER_COMPONENT, type ShipController } from '../components/sh
 import { TRANSFORM_COMPONENT } from '../components/transform';
 import { VELOCITY_COMPONENT } from '../components/velocity';
 import type { FlightTuning } from '../tuning';
+import { mapLook } from '../utils/look_mapping';
 import type { GameContext, System } from './types';
 
 const clamp = (value: number, min: number, max: number): number => {
@@ -48,6 +49,7 @@ export class FlightSystem implements System {
   private readonly right = new Vector3();
   private readonly up = new Vector3();
   private readonly rotationQuat = new Quaternion();
+  private readonly mappedLook = { x: 0, y: 0 };
 
   update(ctx: GameContext, dt: number): void {
     const flightTuning = ctx.tuning.flight;
@@ -84,17 +86,14 @@ export class FlightSystem implements System {
       }
 
       const angularAlpha = expDecay(flightTuning.dampingAngular, clampedDt);
-      const lookSensitivity =
-        input.mode === 'gyro' ? lookTuning.lookSensitivityGyro : lookTuning.lookSensitivityTouch;
       const smoothing = clamp(lookTuning.lookSmoothing, 0, 1);
       const smoothAlpha = 1 - smoothing;
       const maxRate = (lookTuning.maxLookRateDegPerSec * Math.PI) / 180;
 
-      const scaledLookX = input.lookX * lookSensitivity;
-      const scaledLookY = input.lookY * lookSensitivity;
+      mapLook(input.lookX, input.lookY, input.mode, lookTuning, this.mappedLook);
 
-      controller.lookXSmoothed += (scaledLookX - controller.lookXSmoothed) * smoothAlpha;
-      controller.lookYSmoothed += (scaledLookY - controller.lookYSmoothed) * smoothAlpha;
+      controller.lookXSmoothed += (this.mappedLook.x - controller.lookXSmoothed) * smoothAlpha;
+      controller.lookYSmoothed += (this.mappedLook.y - controller.lookYSmoothed) * smoothAlpha;
 
       const targetYawRate = clamp(
         controller.lookXSmoothed * flightTuning.turnRateYaw,
