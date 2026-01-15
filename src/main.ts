@@ -140,10 +140,23 @@ envToggleButton.dataset.active = 'true';
 const inputOverlay = document.getElementById('input-overlay') ?? app;
 inputOverlay.appendChild(envToggleButton);
 
+const anchorToggleButton = document.createElement('button');
+anchorToggleButton.className = 'env-toggle anchor-toggle';
+anchorToggleButton.type = 'button';
+anchorToggleButton.textContent = 'Anchors On';
+anchorToggleButton.dataset.active = 'true';
+inputOverlay.appendChild(anchorToggleButton);
+
 const toggleEnvironment = (): void => {
   const enabled = environment.toggle();
   envToggleButton.dataset.active = enabled ? 'true' : 'false';
   envToggleButton.textContent = enabled ? 'ENV On' : 'ENV Off';
+};
+
+const toggleAnchors = (): void => {
+  const enabled = environment.toggleAnchors();
+  anchorToggleButton.dataset.active = enabled ? 'true' : 'false';
+  anchorToggleButton.textContent = enabled ? 'Anchors On' : 'Anchors Off';
 };
 
 envToggleButton.addEventListener('pointerdown', (event) => {
@@ -152,6 +165,14 @@ envToggleButton.addEventListener('pointerdown', (event) => {
 envToggleButton.addEventListener('pointerup', (event) => {
   event.preventDefault();
   toggleEnvironment();
+});
+
+anchorToggleButton.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+});
+anchorToggleButton.addEventListener('pointerup', (event) => {
+  event.preventDefault();
+  toggleAnchors();
 });
 
 window.addEventListener('keydown', (event) => {

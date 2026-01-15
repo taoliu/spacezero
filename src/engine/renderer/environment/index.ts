@@ -1,6 +1,7 @@
 import { Group, Quaternion, Vector3 } from 'three';
 import type { Transform } from '../../../game/components/transform';
 import { BoostStreaks } from './boost_streaks';
+import { DistantAnchors } from './distant_anchors';
 import { ReferenceObjects } from './reference_objects';
 import { Starfield } from './starfield';
 
@@ -10,6 +11,7 @@ export class EnvironmentCues {
   private readonly starfield: Starfield;
   private readonly referenceObjects: ReferenceObjects;
   private readonly boostStreaks: BoostStreaks;
+  private readonly anchors: DistantAnchors;
   private readonly lastShipPosition = new Vector3();
   private readonly delta = new Vector3();
   private readonly rotationQuat = new Quaternion();
@@ -28,20 +30,34 @@ export class EnvironmentCues {
     this.referenceObjects = new ReferenceObjects({ count: referenceCount, size });
     this.boostStreaks = new BoostStreaks({ count: 120, length: 8, radius: 1.8, speed: 16 });
     this.boostStreaks.setOffset(this.streakOffset);
+    this.anchors = new DistantAnchors({ radius: Math.min(80, size * 0.6) });
 
     this.group.add(this.starfield.points);
     this.group.add(this.referenceObjects.group);
     this.group.add(this.boostStreaks.points);
+    this.group.add(this.anchors.group);
   }
 
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
-    this.group.visible = enabled;
+    this.starfield.points.visible = enabled;
+    this.referenceObjects.group.visible = enabled;
+    if (!enabled) {
+      this.boostStreaks.points.visible = false;
+    }
   }
 
   toggle(): boolean {
     this.setEnabled(!this.enabled);
     return this.enabled;
+  }
+
+  setAnchorsEnabled(enabled: boolean): void {
+    this.anchors.setEnabled(enabled);
+  }
+
+  toggleAnchors(): boolean {
+    return this.anchors.toggle();
   }
 
   update(transform: Transform, dt: number, boostActive: boolean): void {
