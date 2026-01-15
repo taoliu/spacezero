@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Spacezero</title>
+    <style>
+      :root {
+        color: #e6eef9;
+        background: radial-gradient(circle at 20% 20%, #0f1b2a 0%, #05070d 55%, #030408 100%);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+      body {
+        font-family: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', 'Courier New', monospace;
+      }
+      #app {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      canvas {
+        display: block;
+      }
+      #debug-overlay {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 8px 10px;
+        background: rgba(6, 10, 18, 0.7);
+        border: 1px solid rgba(135, 160, 200, 0.35);
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 1.4;
+        letter-spacing: 0.2px;
+        white-space: pre;
+        pointer-events: none;
+        user-select: none;
+      }
+      #input-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: auto;
+        touch-action: none;
+        z-index: 10;
+      }
+      .touch-sticks {
+        position: absolute;
+        inset: 0;
+      }
+      .stick-area {
+        position: absolute;
+        width: min(38vw, 190px);
+        height: min(38vw, 190px);
+        bottom: 16px;
+        pointer-events: auto;
+      }
+      .stick-left {
+        left: 16px;
+      }
+      .stick-right {
+        right: 16px;
+      }
+      .stick-base {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1px solid rgba(120, 150, 190, 0.35);
+        background: radial-gradient(circle, rgba(40, 60, 95, 0.3), rgba(10, 15, 25, 0.65));
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4) inset;
+      }
+      .stick-knob {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 40%;
+        height: 40%;
+        margin-left: -20%;
+        margin-top: -20%;
+        border-radius: 50%;
+        border: 1px solid rgba(150, 200, 255, 0.7);
+        background: rgba(110, 170, 240, 0.3);
+        box-shadow: 0 0 12px rgba(90, 150, 255, 0.6);
+        transform: translate(0, 0);
+      }
+      .button-cluster {
+        position: absolute;
+        right: 16px;
+        bottom: 210px;
+        display: grid;
+        gap: 10px;
+        pointer-events: auto;
+      }
+      .input-button {
+        min-width: 96px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(120, 160, 220, 0.5);
+        background: rgba(10, 18, 30, 0.7);
+        color: #d7e8ff;
+        font-size: 12px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        touch-action: none;
+      }
+      .input-button[data-active='true'] {
+        background: rgba(40, 80, 140, 0.8);
+        border-color: rgba(140, 200, 255, 0.8);
+      }
+      .input-button:disabled {
+        opacity: 0.5;
+      }
+      @media (min-width: 900px) {
+        .button-cluster {
+          right: 24px;
+          bottom: 260px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
