@@ -1,0 +1,70 @@
+import { Group, Quaternion, Vector3 } from 'three';
+import type { Transform } from '../../../game/components/transform';
+import { BoostStreaks } from './boost_streaks';
+import { ReferenceObjects } from './reference_objects';
+import { Starfield } from './starfield';
+
+export class EnvironmentCues {
+  readonly group: Group;
+
+  private readonly starfield: Starfield;
+  private readonly referenceObjects: ReferenceObjects;
+  private readonly boostStreaks: BoostStreaks;
+  private readonly lastShipPosition = new Vector3();
+  private readonly delta = new Vector3();
+  private readonly rotationQuat = new Quaternion();
+  private readonly streakOffset = new Vector3(0, 0, -0.6);
+  private enabled = true;
+  private hasLastPosition = false;
+
+  constructor(options?: { starCount?: number; size?: number; referenceCount?: number }) {
+    const size = options?.size ?? 140;
+    const starCount = options?.starCount ?? 850;
+    const referenceCount = options?.referenceCount ?? 4;
+
+    this.group = new Group();
+
+    this.starfield = new Starfield({ count: starCount, size });
+    this.referenceObjects = new ReferenceObjects({ count: referenceCount, size });
+    this.boostStreaks = new BoostStreaks({ count: 120, length: 8, radius: 1.8, speed: 16 });
+    this.boostStreaks.setOffset(this.streakOffset);
+
+    this.group.add(this.starfield.points);
+    this.group.add(this.referenceObjects.group);
+    this.group.add(this.boostStreaks.points);
+  }
+
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+    this.group.visible = enabled;
+  }
+
+  toggle(): boolean {
+    this.setEnabled(!this.enabled);
+    return this.enabled;
+  }
+
+  update(transform: Transform, dt: number, boostActive: boolean): void {
+    this.group.position.copy(transform.position);
+
+    if (!this.hasLastPosition) {
+      this.lastShipPosition.copy(transform.position);
+      this.hasLastPosition = true;
+      this.boostStreaks.update(this.rotationQuat, 0, boostActive);
+      return;
+    }
+
+    this.delta.copy(transform.position).sub(this.lastShipPosition);
+    this.lastShipPosition.copy(transform.position);
+
+    if (!this.enabled) {
+      return;
+    }
+
+    this.starfield.update(this.delta);
+    this.referenceObjects.update(this.delta);
+
+    this.rotationQuat.setFromEuler(transform.rotation);
+    this.boostStreaks.update(this.rotationQuat, dt, boostActive);
+  }
+}

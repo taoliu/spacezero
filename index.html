@@ -121,6 +121,24 @@
       .input-button:disabled {
         opacity: 0.5;
       }
+      .env-toggle {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(120, 160, 220, 0.55);
+        background: rgba(10, 18, 30, 0.6);
+        color: #d7e8ff;
+        font-size: 11px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      .env-toggle[data-active='false'] {
+        opacity: 0.5;
+      }
       @media (min-width: 900px) {
         .button-cluster {
           right: 24px;

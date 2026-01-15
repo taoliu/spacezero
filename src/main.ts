@@ -7,6 +7,7 @@ import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/component
 import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
 import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
 import { createSystemScheduler } from './game/systems';
+import { EnvironmentCues } from './engine/renderer/environment';
 
 const app = document.getElementById('app');
 if (!app) {
@@ -42,6 +43,9 @@ const material = new THREE.MeshStandardMaterial({
 });
 const ship = new THREE.Mesh(geometry, material);
 scene.add(ship);
+
+const environment = new EnvironmentCues();
+scene.add(environment.group);
 
 const world = new World();
 const context = { world };
@@ -83,6 +87,34 @@ world.addComponent(inputEntity, INPUT_STATE_COMPONENT, inputState);
 
 scheduler.init(context);
 
+const envToggleButton = document.createElement('button');
+envToggleButton.className = 'env-toggle';
+envToggleButton.type = 'button';
+envToggleButton.textContent = 'ENV On';
+envToggleButton.dataset.active = 'true';
+const inputOverlay = document.getElementById('input-overlay') ?? app;
+inputOverlay.appendChild(envToggleButton);
+
+const toggleEnvironment = (): void => {
+  const enabled = environment.toggle();
+  envToggleButton.dataset.active = enabled ? 'true' : 'false';
+  envToggleButton.textContent = enabled ? 'ENV On' : 'ENV Off';
+};
+
+envToggleButton.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+});
+envToggleButton.addEventListener('pointerup', (event) => {
+  event.preventDefault();
+  toggleEnvironment();
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'e' || event.key === 'E') {
+    toggleEnvironment();
+  }
+});
+
 const debugOverlay = document.createElement('div');
 debugOverlay.id = 'debug-overlay';
 debugOverlay.textContent = 'FPS: --\nFrame: -- ms';
@@ -119,6 +151,7 @@ const tick = (now: number) => {
   const dt = clampedMs / 1000;
 
   scheduler.update(context, dt);
+  environment.update(shipTransform, dt, shipController.boostRemaining > 0);
 
   world.query([RENDERABLE_COMPONENT, TRANSFORM_COMPONENT], renderables);
   for (const entityId of renderables) {
