@@ -27,7 +27,14 @@ export type AITuning = {
   aiOrbitRadialFactor: number;
 };
 
-export const tuning: { flight: FlightTuning; ai: AITuning } = {
+export type WeaponTuning = {
+  laserRange: number;
+  heatMax: number;
+  heatRecoverThreshold: number;
+  hitMarkerDuration: number;
+};
+
+export const tuning: { flight: FlightTuning; ai: AITuning; weapons: WeaponTuning } = {
   flight: {
     baseSpeed: 6,
     strafeSpeed: 3.2,
@@ -54,5 +61,11 @@ export const tuning: { flight: FlightTuning; ai: AITuning } = {
     aiMoveDamping: 5,
     aiTurnRate: 3,
     aiOrbitRadialFactor: 0.6,
+  },
+  weapons: {
+    laserRange: 120,
+    heatMax: 1,
+    heatRecoverThreshold: 0.35,
+    hitMarkerDuration: 0.1,
   },
 };

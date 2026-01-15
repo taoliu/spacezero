@@ -26,6 +26,7 @@ export class StageSystem implements System {
   private readonly restartButton: HTMLButtonElement;
   private readonly killButton: HTMLButtonElement;
   private readonly selectionParam: string | null;
+  private readonly debugKillEnabled: boolean;
 
   private readonly forward = new Vector3();
   private readonly right = new Vector3();
@@ -42,7 +43,9 @@ export class StageSystem implements System {
 
   constructor(options: StageSystemOptions) {
     this.enemyFactory = new EnemyFactory(options.scene);
-    this.selectionParam = new URLSearchParams(window.location.search).get('stage');
+    const searchParams = new URLSearchParams(window.location.search);
+    this.selectionParam = searchParams.get('stage');
+    this.debugKillEnabled = searchParams.get('debug') === '1';
 
     this.overlay = document.createElement('div');
     this.overlay.id = 'stage-overlay';
@@ -64,7 +67,9 @@ export class StageSystem implements System {
     const buttonRow = document.createElement('div');
     buttonRow.className = 'stage-buttons';
     buttonRow.appendChild(this.restartButton);
-    buttonRow.appendChild(this.killButton);
+    if (this.debugKillEnabled) {
+      buttonRow.appendChild(this.killButton);
+    }
 
     this.overlay.appendChild(this.overlayLabel);
     this.overlay.appendChild(buttonRow);
@@ -75,10 +80,12 @@ export class StageSystem implements System {
       this.restartRequested = true;
     });
 
-    this.killButton.addEventListener('pointerup', (event) => {
-      event.preventDefault();
-      this.killRequested = true;
-    });
+    if (this.debugKillEnabled) {
+      this.killButton.addEventListener('pointerup', (event) => {
+        event.preventDefault();
+        this.killRequested = true;
+      });
+    }
   }
 
   update(ctx: GameContext, dt: number): void {

@@ -11,6 +11,7 @@ import type { World } from '../../engine/ecs/world';
 import { RENDERABLE_COMPONENT } from '../components/basic';
 import { AI_STATE_COMPONENT } from '../components/ai_state';
 import { BLACKBOARD_COMPONENT } from '../components/blackboard';
+import { HIT_SPHERE_COMPONENT } from '../components/hit_sphere';
 import { HEALTH_COMPONENT } from '../components/health';
 import { SHIELD_COMPONENT } from '../components/shield';
 import { STEERING_INTENT_COMPONENT } from '../components/steering_intent';
@@ -70,6 +71,7 @@ export class EnemyFactory {
       relAngle: 0,
       lastSeenTime: 0,
     });
+    world.addComponent(entityId, HIT_SPHERE_COMPONENT, { radius: 0.8 });
     world.addComponent(entityId, STEERING_INTENT_COMPONENT, {
       desiredVelocity: new Vector3(),
     });

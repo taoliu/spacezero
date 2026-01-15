@@ -192,6 +192,7 @@ Use a typed event bus to decouple systems.
 - `EnemyKilled(entityId, byEntityId)`
 - `PlayerDamaged(amount, sourceEntityId)`
 - `WeaponFired(weaponId, byEntityId)`
+- `DamageRequested(targetEntityId, amount, sourceEntityId)`
 - `TargetChanged(fromEntityId, toEntityId)`
 - `PickupCollected(pickupId, byEntityId)`
 
@@ -388,4 +389,3 @@ Rules:
   - data schema impact
   - tuning parameters
   - acceptance checks
-

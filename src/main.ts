@@ -3,12 +3,14 @@ import type { EntityId } from './engine/ecs/types';
 import { World } from './engine/ecs/world';
 import { RENDERABLE_COMPONENT } from './game/components/basic';
 import { ECONOMY_COMPONENT, type EconomyState } from './game/components/economy';
+import { HIT_MARKER_COMPONENT, type HitMarker } from './game/components/hit_marker';
 import { INPUT_STATE_COMPONENT, type InputState } from './game/components/input_state';
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/components/ship_controller';
 import { STAGE_RUNTIME_COMPONENT, type StageRunState } from './game/components/stage_runtime';
 import { PLAYER_TAG_COMPONENT } from './game/components/tags';
 import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
 import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
+import { WEAPON_SLOTS_COMPONENT, type WeaponSlots } from './game/components/weapon_slots';
 import { EventBus } from './game/events/bus';
 import { ContentLoader } from './game/data/content_loader';
 import { tuning } from './game/tuning';
@@ -74,10 +76,17 @@ const shipController: ShipController = {
   pitchRate: 0,
   wasBoostPressed: false,
 };
+const weaponSlots: WeaponSlots = {
+  activeWeaponId: 'laser_mk1',
+  cooldown: 0,
+  heat: 0,
+  overheated: false,
+};
 world.addComponent(shipEntity, RENDERABLE_COMPONENT, { mesh: ship });
 world.addComponent(shipEntity, TRANSFORM_COMPONENT, shipTransform);
 world.addComponent(shipEntity, VELOCITY_COMPONENT, shipVelocity);
 world.addComponent(shipEntity, SHIP_CONTROLLER_COMPONENT, shipController);
+world.addComponent(shipEntity, WEAPON_SLOTS_COMPONENT, weaponSlots);
 world.addComponent(shipEntity, PLAYER_TAG_COMPONENT, {});
 
 const inputEntity = world.createEntity();
@@ -109,6 +118,10 @@ world.addComponent(stageEntity, STAGE_RUNTIME_COMPONENT, stageState);
 const economyEntity = world.createEntity();
 const economyState: EconomyState = { credits: 0 };
 world.addComponent(economyEntity, ECONOMY_COMPONENT, economyState);
+
+const hitMarkerEntity = world.createEntity();
+const hitMarker: HitMarker = { timer: 0 };
+world.addComponent(hitMarkerEntity, HIT_MARKER_COMPONENT, hitMarker);
 
 const envToggleButton = document.createElement('button');
 envToggleButton.className = 'env-toggle';

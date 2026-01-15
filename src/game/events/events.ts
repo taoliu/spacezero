@@ -39,6 +39,13 @@ export type WeaponFired = {
   byEntityId: EntityId;
 };
 
+export type DamageRequested = {
+  type: 'DamageRequested';
+  targetEntityId: EntityId;
+  amount: number;
+  sourceEntityId?: EntityId;
+};
+
 export type TargetChanged = {
   type: 'TargetChanged';
   fromEntityId?: EntityId;
@@ -59,5 +66,6 @@ export type GameEvent =
   | EnemyKilled
   | PlayerDamaged
   | WeaponFired
+  | DamageRequested
   | TargetChanged
   | PickupCollected;
