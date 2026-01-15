@@ -88,7 +88,7 @@ app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 3000);
 camera.position.set(0, 0.8, 2.2);
 
 const ambient = new THREE.AmbientLight(0xb7c7ff, 0.6);

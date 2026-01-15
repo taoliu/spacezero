@@ -112,7 +112,12 @@ export class WeaponSystem implements System {
       }
     }
 
-    const hit = this.findNearestHit(ctx, this.origin, this.direction, ctx.tuning.weapons.laserRange);
+    const hit = this.findNearestHit(
+      ctx,
+      this.origin,
+      this.direction,
+      ctx.tuning.weapons.weaponLaserMaxRange,
+    );
     if (hit) {
       ctx.eventBus.publish({
         type: 'DamageRequested',

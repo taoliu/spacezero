@@ -45,8 +45,8 @@ export class TargetingSystem implements System {
   update(ctx: GameContext, dt: number): void {
     this.time += dt;
     const tuning = ctx.tuning.targeting;
-    const maxDistance = tuning.maxTargetDistance;
-    const screenRadiusSq = tuning.screenRadius * tuning.screenRadius;
+    const maxDistance = tuning.maxAcquireDistance;
+    const screenRadiusSq = tuning.screenRadiusNdc * tuning.screenRadiusNdc;
 
     ctx.world.query([PLAYER_TAG_COMPONENT, TRANSFORM_COMPONENT, TARGETING_COMPONENT], this.playerEntities);
     const playerId = this.playerEntities[0];

@@ -28,17 +28,17 @@ export type AITuning = {
 };
 
 export type WeaponTuning = {
-  laserRange: number;
+  weaponLaserMaxRange: number;
   heatMax: number;
   heatRecoverThreshold: number;
   hitMarkerDuration: number;
 };
 
 export type TargetingTuning = {
-  screenRadius: number;
+  screenRadiusNdc: number;
   stickyTimeSec: number;
   switchScoreFactor: number;
-  maxTargetDistance: number;
+  maxAcquireDistance: number;
   assistConeDeg: number;
   assistStrength: number;
 };
@@ -108,17 +108,17 @@ export const tuning: {
     aiOrbitRadialFactor: 0.6,
   },
   weapons: {
-    laserRange: 120,
+    weaponLaserMaxRange: 1500,
     heatMax: 1,
     heatRecoverThreshold: 0.35,
     hitMarkerDuration: 0.1,
   },
   targeting: {
-    screenRadius: 0.45,
+    screenRadiusNdc: 0.6,
     stickyTimeSec: 0.7,
     switchScoreFactor: 0.7,
-    maxTargetDistance: 90,
-    assistConeDeg: 6,
+    maxAcquireDistance: 2000,
+    assistConeDeg: 8,
     assistStrength: 0.3,
   },
   autoTrace: {
