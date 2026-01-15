@@ -50,6 +50,16 @@ export type AutoTraceTuning = {
   autoTraceStrength: number;
 };
 
+export type EnvironmentTuning = {
+  galacticBandIntensity: number;
+  galacticBandWidth: number;
+  galacticBandTiltDeg: number;
+  sunDirection: [number, number, number];
+  sunIntensity: number;
+  sunSpriteSize: number;
+  sunHaloIntensity: number;
+};
+
 export type LookTuning = {
   lookSensitivityTouch: number;
   lookSensitivityGyro: number;
@@ -67,6 +77,7 @@ export const tuning: {
   weapons: WeaponTuning;
   targeting: TargetingTuning;
   autoTrace: AutoTraceTuning;
+  environment: EnvironmentTuning;
   look: LookTuning;
 } = {
   flight: {
@@ -115,6 +126,15 @@ export const tuning: {
     autoTraceStopAngleDeg: 3,
     autoTraceCancelLookThreshold: 0.2,
     autoTraceStrength: 1,
+  },
+  environment: {
+    galacticBandIntensity: 0.28,
+    galacticBandWidth: 0.35,
+    galacticBandTiltDeg: 22,
+    sunDirection: [0.4, 0.2, -0.9],
+    sunIntensity: 0.55,
+    sunSpriteSize: 7,
+    sunHaloIntensity: 0.35,
   },
   look: {
     lookSensitivityTouch: 0.4,

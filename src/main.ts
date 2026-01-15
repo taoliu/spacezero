@@ -55,7 +55,21 @@ const material = new THREE.MeshStandardMaterial({
 const ship = new THREE.Mesh(geometry, material);
 scene.add(ship);
 
-const environment = new EnvironmentCues();
+const environment = new EnvironmentCues({
+  anchors: {
+    band: {
+      intensity: tuning.environment.galacticBandIntensity,
+      width: tuning.environment.galacticBandWidth,
+      tiltDeg: tuning.environment.galacticBandTiltDeg,
+    },
+    sun: {
+      direction: tuning.environment.sunDirection,
+      intensity: tuning.environment.sunIntensity,
+      spriteSize: tuning.environment.sunSpriteSize,
+      haloIntensity: tuning.environment.sunHaloIntensity,
+    },
+  },
+});
 scene.add(environment.group);
 
 const world = new World();
@@ -158,6 +172,20 @@ anchorToggleButton.textContent = 'Anchors On';
 anchorToggleButton.dataset.active = 'true';
 inputOverlay.appendChild(anchorToggleButton);
 
+const bandToggleButton = document.createElement('button');
+bandToggleButton.className = 'env-toggle band-toggle';
+bandToggleButton.type = 'button';
+bandToggleButton.textContent = 'Band On';
+bandToggleButton.dataset.active = 'true';
+inputOverlay.appendChild(bandToggleButton);
+
+const sunToggleButton = document.createElement('button');
+sunToggleButton.className = 'env-toggle sun-toggle';
+sunToggleButton.type = 'button';
+sunToggleButton.textContent = 'Sun On';
+sunToggleButton.dataset.active = 'true';
+inputOverlay.appendChild(sunToggleButton);
+
 const toggleEnvironment = (): void => {
   const enabled = environment.toggle();
   envToggleButton.dataset.active = enabled ? 'true' : 'false';
@@ -168,6 +196,18 @@ const toggleAnchors = (): void => {
   const enabled = environment.toggleAnchors();
   anchorToggleButton.dataset.active = enabled ? 'true' : 'false';
   anchorToggleButton.textContent = enabled ? 'Anchors On' : 'Anchors Off';
+};
+
+const toggleBand = (): void => {
+  const enabled = environment.toggleBand();
+  bandToggleButton.dataset.active = enabled ? 'true' : 'false';
+  bandToggleButton.textContent = enabled ? 'Band On' : 'Band Off';
+};
+
+const toggleSun = (): void => {
+  const enabled = environment.toggleSun();
+  sunToggleButton.dataset.active = enabled ? 'true' : 'false';
+  sunToggleButton.textContent = enabled ? 'Sun On' : 'Sun Off';
 };
 
 envToggleButton.addEventListener('pointerdown', (event) => {
@@ -184,6 +224,22 @@ anchorToggleButton.addEventListener('pointerdown', (event) => {
 anchorToggleButton.addEventListener('pointerup', (event) => {
   event.preventDefault();
   toggleAnchors();
+});
+
+bandToggleButton.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+});
+bandToggleButton.addEventListener('pointerup', (event) => {
+  event.preventDefault();
+  toggleBand();
+});
+
+sunToggleButton.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+});
+sunToggleButton.addEventListener('pointerup', (event) => {
+  event.preventDefault();
+  toggleSun();
 });
 
 window.addEventListener('keydown', (event) => {
