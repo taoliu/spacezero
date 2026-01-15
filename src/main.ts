@@ -5,6 +5,7 @@ import { RENDERABLE_COMPONENT } from './game/components/basic';
 import { ECONOMY_COMPONENT, type EconomyState } from './game/components/economy';
 import { HIT_MARKER_COMPONENT, type HitMarker } from './game/components/hit_marker';
 import { INPUT_STATE_COMPONENT, type InputState } from './game/components/input_state';
+import { AUTO_TRACE_COMPONENT, type AutoTrace } from './game/components/auto_trace';
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/components/ship_controller';
 import { STAGE_RUNTIME_COMPONENT, type StageRunState } from './game/components/stage_runtime';
 import { PLAYER_TAG_COMPONENT } from './game/components/tags';
@@ -85,6 +86,15 @@ const weaponSlots: WeaponSlots = {
   heat: 0,
   overheated: false,
 };
+const autoTrace: AutoTrace = {
+  enabled: false,
+  targetId: null,
+  strength: tuning.autoTrace.autoTraceStrength,
+  stopAngleDeg: tuning.autoTrace.autoTraceStopAngleDeg,
+  cancelLookThreshold: tuning.autoTrace.autoTraceCancelLookThreshold,
+  lookX: 0,
+  lookY: 0,
+};
 const targeting: Targeting = {
   currentTargetId: null,
   lockProgress: 0,
@@ -94,6 +104,7 @@ world.addComponent(shipEntity, RENDERABLE_COMPONENT, { mesh: ship });
 world.addComponent(shipEntity, TRANSFORM_COMPONENT, shipTransform);
 world.addComponent(shipEntity, VELOCITY_COMPONENT, shipVelocity);
 world.addComponent(shipEntity, SHIP_CONTROLLER_COMPONENT, shipController);
+world.addComponent(shipEntity, AUTO_TRACE_COMPONENT, autoTrace);
 world.addComponent(shipEntity, WEAPON_SLOTS_COMPONENT, weaponSlots);
 world.addComponent(shipEntity, TARGETING_COMPONENT, targeting);
 world.addComponent(shipEntity, PLAYER_TAG_COMPONENT, {});

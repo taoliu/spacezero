@@ -1,5 +1,6 @@
 import { Camera, Vector3 } from 'three';
 import type { EntityId } from '../../../engine/ecs/types';
+import { AUTO_TRACE_COMPONENT } from '../../components/auto_trace';
 import { ENEMY_TAG_COMPONENT, PLAYER_TAG_COMPONENT } from '../../components/tags';
 import { TARGETING_COMPONENT } from '../../components/targeting';
 import { TRANSFORM_COMPONENT } from '../../components/transform';
@@ -18,10 +19,13 @@ export class HudSystem implements System {
   private readonly toEnemy = new Vector3();
   private readonly resolvedPosition = new Vector3();
   private resolvedDistance = 0;
+  private resolvedTargetId: EntityId | null = null;
+  private pendingAutoTrace = false;
 
   private readonly bracket: HTMLDivElement;
   private readonly distanceLabel: HTMLDivElement;
   private readonly arrow: HTMLDivElement;
+  private readonly autoIndicator: HTMLDivElement;
 
   constructor(options: { root: HTMLElement; camera: Camera }) {
     this.camera = options.camera;
@@ -40,34 +44,73 @@ export class HudSystem implements System {
     this.root.appendChild(this.bracket);
     this.root.appendChild(this.arrow);
 
+    this.autoIndicator = document.createElement('div');
+    this.autoIndicator.id = 'auto-trace-indicator';
+    this.autoIndicator.textContent = 'AUTO';
+    this.root.appendChild(this.autoIndicator);
+
     this.hideBracket();
     this.hideArrow();
+    this.autoIndicator.dataset.active = 'false';
+
+    const requestAutoTrace = (event: PointerEvent) => {
+      event.preventDefault();
+      this.pendingAutoTrace = true;
+    };
+
+    this.bracket.addEventListener('pointerdown', (event) => event.preventDefault());
+    this.bracket.addEventListener('pointerup', requestAutoTrace);
+    this.bracket.addEventListener('pointercancel', (event) => event.preventDefault());
+
+    this.arrow.addEventListener('pointerdown', (event) => event.preventDefault());
+    this.arrow.addEventListener('pointerup', requestAutoTrace);
+    this.arrow.addEventListener('pointercancel', (event) => event.preventDefault());
   }
 
   update(ctx: GameContext, dt: number): void {
     void dt;
 
-    ctx.world.query([PLAYER_TAG_COMPONENT, TRANSFORM_COMPONENT, TARGETING_COMPONENT], this.playerEntities);
+    ctx.world.query(
+      [PLAYER_TAG_COMPONENT, TRANSFORM_COMPONENT, TARGETING_COMPONENT, AUTO_TRACE_COMPONENT],
+      this.playerEntities,
+    );
     const playerId = this.playerEntities[0];
     if (!playerId) {
       this.hideBracket();
       this.hideArrow();
+      this.pendingAutoTrace = false;
+      this.autoIndicator.dataset.active = 'false';
       return;
     }
 
     const playerTransform = ctx.world.getComponent(playerId, TRANSFORM_COMPONENT);
     const targeting = ctx.world.getComponent(playerId, TARGETING_COMPONENT);
-    if (!playerTransform || !targeting) {
+    const autoTrace = ctx.world.getComponent(playerId, AUTO_TRACE_COMPONENT);
+    if (!playerTransform || !targeting || !autoTrace) {
       this.hideBracket();
       this.hideArrow();
+      this.pendingAutoTrace = false;
+      this.autoIndicator.dataset.active = 'false';
       return;
     }
 
     if (!this.resolveTarget(ctx, targeting.currentTargetId, playerTransform.position)) {
       this.hideBracket();
       this.hideArrow();
+      this.pendingAutoTrace = false;
+      this.autoIndicator.dataset.active = autoTrace.enabled ? 'true' : 'false';
       return;
     }
+
+    if (this.pendingAutoTrace) {
+      this.pendingAutoTrace = false;
+      if (this.resolvedTargetId !== null) {
+        autoTrace.enabled = true;
+        autoTrace.targetId = this.resolvedTargetId;
+      }
+    }
+
+    this.autoIndicator.dataset.active = autoTrace.enabled ? 'true' : 'false';
 
     this.projected.copy(this.resolvedPosition).project(this.camera);
     const ndcX = this.projected.x;
@@ -98,11 +141,14 @@ export class HudSystem implements System {
     currentTarget: EntityId | null,
     playerPosition: Vector3,
   ): boolean {
+    this.resolvedTargetId = null;
+
     if (currentTarget !== null && ctx.world.isAlive(currentTarget)) {
       const transform = ctx.world.getComponent(currentTarget, TRANSFORM_COMPONENT);
       if (transform) {
         this.resolvedPosition.copy(transform.position);
         this.resolvedDistance = transform.position.distanceTo(playerPosition);
+        this.resolvedTargetId = currentTarget;
         return true;
       }
     }
@@ -134,6 +180,7 @@ export class HudSystem implements System {
 
     this.resolvedPosition.copy(nearestPosition);
     this.resolvedDistance = nearestDistance;
+    this.resolvedTargetId = nearestId;
     return true;
   }
 

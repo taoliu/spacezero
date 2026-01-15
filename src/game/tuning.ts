@@ -43,6 +43,13 @@ export type TargetingTuning = {
   assistStrength: number;
 };
 
+export type AutoTraceTuning = {
+  autoTraceMaxTurnDegPerSec: number;
+  autoTraceStopAngleDeg: number;
+  autoTraceCancelLookThreshold: number;
+  autoTraceStrength: number;
+};
+
 export type LookTuning = {
   lookSensitivityTouch: number;
   lookSensitivityGyro: number;
@@ -59,6 +66,7 @@ export const tuning: {
   ai: AITuning;
   weapons: WeaponTuning;
   targeting: TargetingTuning;
+  autoTrace: AutoTraceTuning;
   look: LookTuning;
 } = {
   flight: {
@@ -101,6 +109,12 @@ export const tuning: {
     maxTargetDistance: 90,
     assistConeDeg: 6,
     assistStrength: 0.3,
+  },
+  autoTrace: {
+    autoTraceMaxTurnDegPerSec: 90,
+    autoTraceStopAngleDeg: 3,
+    autoTraceCancelLookThreshold: 0.2,
+    autoTraceStrength: 1,
   },
   look: {
     lookSensitivityTouch: 0.4,

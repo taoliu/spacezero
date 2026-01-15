@@ -2,6 +2,7 @@ import type { Camera, Scene } from 'three';
 import { DebugEventLogSystem } from './debug_event_log_system';
 import { DebugEventPulseSystem } from './debug_event_pulse_system';
 import { DamageSystem } from './damage_system';
+import { AutoTraceSystem } from './auto_trace_system';
 import { FlightSystem } from './flight_system';
 import { HitMarkerSystem } from './hit_marker_system';
 import { InputSystem } from './input_system';
@@ -50,10 +51,11 @@ export const createSystemScheduler = (options: {
   camera: Camera;
 }): SystemScheduler => {
   // Explicit system ordering lives here.
-  // Order: Input -> Flight -> Stage -> Objectives -> AI Perception -> AI Decision -> AI Steering -> Enemy Movement -> Targeting -> Weapons -> Damage -> HUD -> Debug -> Spin.
+  // Order: Input -> AutoTrace -> Flight -> Stage -> Objectives -> AI Perception -> AI Decision -> AI Steering -> Enemy Movement -> Targeting -> Weapons -> Damage -> HUD -> Debug -> Spin.
   const aiScheduler = new AITickScheduler();
   const systems: System[] = [
     new InputSystem(options.inputRoot),
+    new AutoTraceSystem(),
     new FlightSystem(),
     new StageSystem({ root: options.inputRoot, scene: options.scene }),
     new ObjectiveSystem(),

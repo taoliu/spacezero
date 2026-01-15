@@ -1,6 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import type { EntityId } from '../../engine/ecs/types';
 import { INPUT_STATE_COMPONENT } from '../components/input_state';
+import { AUTO_TRACE_COMPONENT } from '../components/auto_trace';
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from '../components/ship_controller';
 import { TRANSFORM_COMPONENT } from '../components/transform';
 import { VELOCITY_COMPONENT } from '../components/velocity';
@@ -80,6 +81,7 @@ export class FlightSystem implements System {
       const transform = ctx.world.getComponent(entityId, TRANSFORM_COMPONENT);
       const velocity = ctx.world.getComponent(entityId, VELOCITY_COMPONENT);
       const controller = ctx.world.getComponent(entityId, SHIP_CONTROLLER_COMPONENT);
+      const autoTrace = ctx.world.getComponent(entityId, AUTO_TRACE_COMPONENT);
 
       if (!transform || !velocity || !controller) {
         continue;
@@ -91,6 +93,11 @@ export class FlightSystem implements System {
       const maxRate = (lookTuning.maxLookRateDegPerSec * Math.PI) / 180;
 
       mapLook(input.lookX, input.lookY, input.mode, lookTuning, this.mappedLook);
+
+      if (autoTrace?.enabled) {
+        this.mappedLook.x += autoTrace.lookX;
+        this.mappedLook.y += autoTrace.lookY;
+      }
 
       controller.lookXSmoothed += (this.mappedLook.x - controller.lookXSmoothed) * smoothAlpha;
       controller.lookYSmoothed += (this.mappedLook.y - controller.lookYSmoothed) * smoothAlpha;
