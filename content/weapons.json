@@ -1,0 +1,20 @@
+[
+  {
+    "id": "laser_mk1",
+    "name": "Pulse Laser",
+    "type": "laser",
+    "baseDamage": 6,
+    "fireRate": 6,
+    "heatPerShot": 0.2,
+    "coolRate": 0.45
+  },
+  {
+    "id": "missile_mk1",
+    "name": "Homing Missile",
+    "type": "missile",
+    "baseDamage": 22,
+    "lockTime": 1.1,
+    "ammoMax": 4,
+    "reloadTime": 2.4
+  }
+]

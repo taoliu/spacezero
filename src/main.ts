@@ -7,9 +7,11 @@ import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/component
 import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
 import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
 import { EventBus } from './game/events/bus';
+import { ContentLoader } from './game/data/content_loader';
 import { tuning } from './game/tuning';
 import { createSystemScheduler } from './game/systems';
 import { EnvironmentCues } from './engine/renderer/environment';
+import type { GameContext } from './game/systems/types';
 
 const app = document.getElementById('app');
 if (!app) {
@@ -51,7 +53,6 @@ scene.add(environment.group);
 
 const world = new World();
 const eventBus = new EventBus();
-const context = { world, eventBus, events: eventBus.peek(), tuning };
 const scheduler = createSystemScheduler({ inputRoot: app });
 
 const shipEntity = world.createEntity();
@@ -88,8 +89,6 @@ const inputState: InputState = {
 };
 world.addComponent(inputEntity, INPUT_STATE_COMPONENT, inputState);
 
-scheduler.init(context);
-
 const envToggleButton = document.createElement('button');
 envToggleButton.className = 'env-toggle';
 envToggleButton.type = 'button';
@@ -123,6 +122,11 @@ debugOverlay.id = 'debug-overlay';
 debugOverlay.textContent = 'FPS: --\nFrame: -- ms';
 app.appendChild(debugOverlay);
 
+const loadingOverlay = document.createElement('div');
+loadingOverlay.id = 'loading-overlay';
+loadingOverlay.textContent = 'Loading content...';
+app.appendChild(loadingOverlay);
+
 const maxFrameMs = 50;
 let lastTime = performance.now();
 let fpsAccumulator = 0;
@@ -131,6 +135,7 @@ const renderables: EntityId[] = [];
 const cameraOffset = new THREE.Vector3(0, 0.12, 0.25);
 const cameraOffsetWorld = new THREE.Vector3();
 const cameraQuat = new THREE.Quaternion();
+let context: GameContext | null = null;
 
 const resize = () => {
   const width = window.innerWidth;
@@ -152,6 +157,11 @@ const tick = (now: number) => {
 
   const clampedMs = Math.min(frameMs, maxFrameMs);
   const dt = clampedMs / 1000;
+
+  if (!context) {
+    window.requestAnimationFrame(tick);
+    return;
+  }
 
   scheduler.update(context, dt);
   environment.update(shipTransform, dt, shipController.boostRemaining > 0);
@@ -199,4 +209,19 @@ const tick = (now: number) => {
   window.requestAnimationFrame(tick);
 };
 
-window.requestAnimationFrame(tick);
+const boot = async (): Promise<void> => {
+  const loader = new ContentLoader();
+  try {
+    const content = await loader.loadAll();
+    context = { world, eventBus, events: eventBus.peek(), tuning, content };
+    console.info('[Content] Loaded', content);
+    loadingOverlay.remove();
+    scheduler.init(context);
+    window.requestAnimationFrame(tick);
+  } catch (error) {
+    console.error(error);
+    loadingOverlay.textContent = 'Content load failed. See console.';
+  }
+};
+
+void boot();

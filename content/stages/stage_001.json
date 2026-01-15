@@ -1,0 +1,20 @@
+{
+  "id": "stage_001",
+  "name": "Drift Field",
+  "arena": {
+    "radius": 1200
+  },
+  "enemies": [
+    { "archetypeId": "drone_light", "count": 4 }
+  ],
+  "objectives": [
+    { "type": "KillAll" }
+  ],
+  "rewards": {
+    "credits": 200,
+    "upgrades": ["laser_damage_1"]
+  },
+  "reinforcements": [
+    { "delay": 15, "archetypeId": "drone_light", "count": 2 }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "laser_damage_1",
+    "name": "Laser Damage I",
+    "cost": 120,
+    "effects": [
+      { "target": "weapon", "stat": "laserDamage", "op": "add", "value": 2 }
+    ]
+  },
+  {
+    "id": "missile_lock_1",
+    "name": "Missile Lock Assist",
+    "cost": 140,
+    "effects": [
+      { "target": "weapon", "stat": "missileLockTime", "op": "add", "value": -0.2 }
+    ]
+  },
+  {
+    "id": "target_cone_1",
+    "name": "Targeting Cone",
+    "cost": 100,
+    "effects": [
+      { "target": "targeting", "stat": "assistCone", "op": "add", "value": 5 }
+    ]
+  }
+]

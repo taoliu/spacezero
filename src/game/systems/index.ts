@@ -19,10 +19,10 @@ export class SystemScheduler {
   }
 
   update(ctx: GameContext, dt: number): void {
-    // Systems read ctx.events (eventBus.peek) and may publish via ctx.eventBus.
-    ctx.events = ctx.eventBus.peek();
-
     for (const system of this.systems) {
+      // Systems read ctx.events (eventBus.peek) and may publish via ctx.eventBus.
+      // Events published by earlier systems in the same frame are visible to later systems.
+      ctx.events = ctx.eventBus.peek();
       system.update(ctx, dt);
     }
 

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "drone_light",
+    "name": "Light Drone",
+    "stats": {
+      "maxHp": 25,
+      "shield": 5,
+      "speed": 5
+    },
+    "weapons": ["laser_mk1"],
+    "ai": {
+      "behavior": "aggressive"
+    }
+  }
+]
