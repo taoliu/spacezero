@@ -6,6 +6,8 @@ import { INPUT_STATE_COMPONENT, type InputState } from './game/components/input_
 import { SHIP_CONTROLLER_COMPONENT, type ShipController } from './game/components/ship_controller';
 import { TRANSFORM_COMPONENT, type Transform } from './game/components/transform';
 import { VELOCITY_COMPONENT, type Velocity } from './game/components/velocity';
+import { EventBus } from './game/events/bus';
+import { tuning } from './game/tuning';
 import { createSystemScheduler } from './game/systems';
 import { EnvironmentCues } from './engine/renderer/environment';
 
@@ -48,7 +50,8 @@ const environment = new EnvironmentCues();
 scene.add(environment.group);
 
 const world = new World();
-const context = { world };
+const eventBus = new EventBus();
+const context = { world, eventBus, events: eventBus.peek(), tuning };
 const scheduler = createSystemScheduler({ inputRoot: app });
 
 const shipEntity = world.createEntity();
