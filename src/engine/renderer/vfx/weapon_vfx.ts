@@ -22,6 +22,9 @@ type BeamInstance = {
 type SpriteInstance = {
   sprite: Sprite;
   ttl: number;
+  maxTtl: number;
+  baseSize: number;
+  growth: number;
 };
 
 const createRadialTexture = (): Texture | null => {
@@ -37,10 +40,11 @@ const createRadialTexture = (): Texture | null => {
     return null;
   }
 
-  const gradient = ctx.createRadialGradient(64, 64, 6, 64, 64, 64);
+  const gradient = ctx.createRadialGradient(64, 64, 4, 64, 64, 64);
   gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  gradient.addColorStop(0.25, 'rgba(255, 255, 255, 0.8)');
-  gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.2)');
+  gradient.addColorStop(0.18, 'rgba(255, 255, 255, 0.95)');
+  gradient.addColorStop(0.45, 'rgba(130, 220, 255, 0.45)');
+  gradient.addColorStop(0.78, 'rgba(255, 170, 120, 0.2)');
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
   ctx.fillStyle = gradient;
@@ -49,6 +53,24 @@ const createRadialTexture = (): Texture | null => {
   const texture = new Texture(canvas);
   texture.needsUpdate = true;
   return texture;
+};
+
+const updateSpritePool = (pool: SpriteInstance[], dt: number): void => {
+  for (const instance of pool) {
+    if (instance.ttl <= 0) {
+      continue;
+    }
+
+    instance.ttl -= dt;
+    if (instance.ttl <= 0) {
+      instance.sprite.visible = false;
+      continue;
+    }
+
+    const life = Math.max(0, instance.ttl / Math.max(instance.maxTtl, Number.EPSILON));
+    const growthScale = 1 + (1 - life) * instance.growth;
+    instance.sprite.scale.setScalar(instance.baseSize * growthScale);
+  }
 };
 
 export class WeaponVfx {
@@ -71,24 +93,24 @@ export class WeaponVfx {
   private missileCursor = 0;
 
   constructor(options?: { beamCount?: number; spriteCount?: number; missileTrailCount?: number }) {
-    const beamCount = options?.beamCount ?? 24;
-    const spriteCount = options?.spriteCount ?? 24;
-    const missileTrailCount = options?.missileTrailCount ?? 12;
+    const beamCount = options?.beamCount ?? 30;
+    const spriteCount = options?.spriteCount ?? 26;
+    const missileTrailCount = options?.missileTrailCount ?? 14;
 
     this.group = new Group();
 
     this.beamMaterial = new LineBasicMaterial({
-      color: new Color(0x8fd4ff),
+      color: new Color(0x6de8ff),
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.98,
       blending: AdditiveBlending,
       depthWrite: false,
     });
 
     this.missileTrailMaterial = new LineBasicMaterial({
-      color: new Color(0xffc46f),
+      color: new Color(0xff9f56),
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.78,
       blending: AdditiveBlending,
       depthWrite: false,
     });
@@ -96,19 +118,19 @@ export class WeaponVfx {
     const texture = createRadialTexture();
 
     this.muzzleMaterial = new SpriteMaterial({
-      color: 0x9ad5ff,
+      color: 0x99e0ff,
       map: texture ?? undefined,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.95,
       blending: AdditiveBlending,
       depthWrite: false,
     });
 
     this.impactMaterial = new SpriteMaterial({
-      color: 0xffe6b3,
+      color: 0xffd39a,
       map: texture ?? undefined,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.95,
       blending: AdditiveBlending,
       depthWrite: false,
     });
@@ -125,14 +147,14 @@ export class WeaponVfx {
       const sprite = new Sprite(this.muzzleMaterial);
       sprite.visible = false;
       this.group.add(sprite);
-      this.muzzleFlashes.push({ sprite, ttl: 0 });
+      this.muzzleFlashes.push({ sprite, ttl: 0, maxTtl: 0.001, baseSize: 0.35, growth: 0.35 });
     }
 
     for (let i = 0; i < spriteCount; i += 1) {
       const sprite = new Sprite(this.impactMaterial);
       sprite.visible = false;
       this.group.add(sprite);
-      this.impactSparks.push({ sprite, ttl: 0 });
+      this.impactSparks.push({ sprite, ttl: 0, maxTtl: 0.001, baseSize: 0.45, growth: 0.6 });
     }
   }
 
@@ -157,25 +179,8 @@ export class WeaponVfx {
       }
     }
 
-    for (const sprite of this.muzzleFlashes) {
-      if (sprite.ttl <= 0) {
-        continue;
-      }
-      sprite.ttl -= dt;
-      if (sprite.ttl <= 0) {
-        sprite.sprite.visible = false;
-      }
-    }
-
-    for (const sprite of this.impactSparks) {
-      if (sprite.ttl <= 0) {
-        continue;
-      }
-      sprite.ttl -= dt;
-      if (sprite.ttl <= 0) {
-        sprite.sprite.visible = false;
-      }
-    }
+    updateSpritePool(this.muzzleFlashes, dt);
+    updateSpritePool(this.impactSparks, dt);
   }
 
   spawnBeam(origin: Vector3, direction: Vector3, length: number, ttlSeconds: number, width: number): void {
@@ -220,20 +225,24 @@ export class WeaponVfx {
     const flash = this.muzzleFlashes[this.muzzleCursor];
     this.muzzleCursor = (this.muzzleCursor + 1) % this.muzzleFlashes.length;
 
+    flash.baseSize = size;
+    flash.maxTtl = Math.max(ttlSeconds, 0.001);
+    flash.ttl = flash.maxTtl;
     flash.sprite.position.copy(position);
     flash.sprite.scale.setScalar(size);
     flash.sprite.visible = true;
-    flash.ttl = ttlSeconds;
   }
 
   spawnImpact(position: Vector3, size: number, ttlSeconds: number): void {
     const spark = this.impactSparks[this.impactCursor];
     this.impactCursor = (this.impactCursor + 1) % this.impactSparks.length;
 
+    spark.baseSize = size;
+    spark.maxTtl = Math.max(ttlSeconds, 0.001);
+    spark.ttl = spark.maxTtl;
     spark.sprite.position.copy(position);
     spark.sprite.scale.setScalar(size);
     spark.sprite.visible = true;
-    spark.ttl = ttlSeconds;
   }
 
   private createBeamInstance(material: LineBasicMaterial): BeamInstance {

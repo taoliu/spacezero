@@ -29,9 +29,9 @@ export class VfxSystem implements System {
     this.vfx.update(dt);
 
     const tuning = ctx.tuning.weapons;
-    const muzzleOffset = 0.6;
-    const muzzleSize = 0.35;
-    const impactSize = 0.45;
+    const muzzleOffset = 0.58;
+    const muzzleSize = 0.42;
+    const impactSize = 0.62;
 
     for (const event of ctx.events) {
       if (event.type !== 'WeaponFired') {
@@ -73,7 +73,7 @@ export class VfxSystem implements System {
           this.direction,
           beamLength,
           tuning.laserBeamTtlMs / 1000,
-          tuning.laserBeamWidth,
+          tuning.laserBeamWidth * 1.1,
         );
         this.vfx.spawnMuzzleFlash(this.muzzle, muzzleSize, tuning.muzzleFlashTtlMs / 1000);
 
@@ -87,7 +87,7 @@ export class VfxSystem implements System {
           this.direction,
           tuning.missileTrailLength,
           tuning.missileTrailTtlMs / 1000,
-          tuning.laserBeamWidth,
+          tuning.laserBeamWidth * 0.95,
         );
       }
     }
