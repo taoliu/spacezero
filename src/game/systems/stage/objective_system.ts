@@ -19,9 +19,16 @@ const countRemainingEnemies = (world: World, ids: EntityId[], killed: Set<Entity
   return remaining;
 };
 
-const applyEnemyKilledEvents = (events: ReadonlyArray<GameEvent>, killed: Set<EntityId>): void => {
+const applyEnemyKilledEvents = (
+  events: ReadonlyArray<GameEvent>,
+  stageEnemyIds: EntityId[],
+  killed: Set<EntityId>,
+): void => {
   for (const event of events) {
-    if (event.type === 'EnemyKilled') {
+    if (event.type !== 'EnemyKilled') {
+      continue;
+    }
+    if (stageEnemyIds.includes(event.entityId)) {
       killed.add(event.entityId);
     }
   }
@@ -29,11 +36,18 @@ const applyEnemyKilledEvents = (events: ReadonlyArray<GameEvent>, killed: Set<En
 
 export class ObjectiveSystem implements System {
   private readonly stageEntities: EntityId[] = [];
-  private readonly killedEnemies = new Set<EntityId>();
+  private readonly killedEnemiesByStage = new Map<EntityId, Set<EntityId>>();
 
   update(ctx: GameContext, dt: number): void {
     void dt;
     ctx.world.query([STAGE_RUNTIME_COMPONENT], this.stageEntities);
+
+    const aliveStageIds = new Set(this.stageEntities);
+    for (const stageId of this.killedEnemiesByStage.keys()) {
+      if (!aliveStageIds.has(stageId)) {
+        this.killedEnemiesByStage.delete(stageId);
+      }
+    }
 
     for (const entityId of this.stageEntities) {
       const stageState = ctx.world.getComponent(entityId, STAGE_RUNTIME_COMPONENT);
@@ -42,16 +56,22 @@ export class ObjectiveSystem implements System {
       }
 
       if (stageState.status !== 'Running') {
-        this.killedEnemies.clear();
+        this.killedEnemiesByStage.delete(entityId);
         continue;
       }
 
-      applyEnemyKilledEvents(ctx.events, this.killedEnemies);
+      let killed = this.killedEnemiesByStage.get(entityId);
+      if (!killed) {
+        killed = new Set<EntityId>();
+        this.killedEnemiesByStage.set(entityId, killed);
+      }
+
+      applyEnemyKilledEvents(ctx.events, stageState.spawnedEnemyIds, killed);
 
       const remaining = countRemainingEnemies(
         ctx.world,
         stageState.spawnedEnemyIds,
-        this.killedEnemies,
+        killed,
       );
 
       stageState.remainingEnemies = remaining;
@@ -61,10 +81,11 @@ export class ObjectiveSystem implements System {
   }
 
   reset(): void {
-    this.killedEnemies.clear();
+    this.killedEnemiesByStage.clear();
   }
 }
 
 export const objectiveUtils = {
   countRemainingEnemies,
+  applyEnemyKilledEvents,
 };

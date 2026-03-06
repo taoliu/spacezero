@@ -147,7 +147,7 @@ export class StageSystem implements System {
     const stage = this.getStageDef(ctx, stageState.stageId);
     if (!stage) {
       stageState.status = 'Completed';
-      this.overlay.textContent = `Stage: ${stageState.stageId} (missing)`;
+      this.overlayLabel.textContent = `Stage: ${stageState.stageId} (missing)`;
       return;
     }
 

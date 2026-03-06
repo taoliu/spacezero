@@ -10,6 +10,11 @@ const expDecay = (rate: number, dt: number): number => {
   return 1 - Math.exp(-rate * dt);
 };
 
+export const shortestAngleDelta = (from: number, to: number): number => {
+  const delta = to - from;
+  return Math.atan2(Math.sin(delta), Math.cos(delta));
+};
+
 export class EnemyMovementSystem implements System {
   private readonly enemyEntities: EntityId[] = [];
   private readonly temp = new Vector3();
@@ -38,7 +43,7 @@ export class EnemyMovementSystem implements System {
       if (velocity.linear.lengthSq() > 0.01) {
         this.temp.copy(velocity.linear).normalize();
         const yaw = Math.atan2(-this.temp.x, -this.temp.z);
-        const yawDelta = yaw - transform.rotation.y;
+        const yawDelta = shortestAngleDelta(transform.rotation.y, yaw);
         transform.rotation.y += yawDelta * Math.min(1, tuning.aiTurnRate * dt);
       }
     }

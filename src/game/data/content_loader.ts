@@ -50,10 +50,58 @@ const expectString = (value: unknown, source: string, path: string): string => {
 };
 
 const expectNumber = (value: unknown, source: string, path: string): number => {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    fail(source, path, 'expected number');
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    fail(source, path, 'expected finite number');
   }
   return value as number;
+};
+
+const expectNumberAtLeast = (
+  value: unknown,
+  min: number,
+  source: string,
+  path: string,
+): number => {
+  const num = expectNumber(value, source, path);
+  if (num < min) {
+    fail(source, path, `expected number >= ${min}`);
+  }
+  return num;
+};
+
+const expectPositiveNumber = (value: unknown, source: string, path: string): number => {
+  const num = expectNumber(value, source, path);
+  if (num <= 0) {
+    fail(source, path, 'expected number > 0');
+  }
+  return num;
+};
+
+const expectIntegerAtLeast = (
+  value: unknown,
+  min: number,
+  source: string,
+  path: string,
+): number => {
+  const num = expectNumberAtLeast(value, min, source, path);
+  if (!Number.isInteger(num)) {
+    fail(source, path, `expected integer >= ${min}`);
+  }
+  return num;
+};
+
+const expectNumberInRange = (
+  value: unknown,
+  min: number,
+  max: number,
+  source: string,
+  path: string,
+): number => {
+  const num = expectNumber(value, source, path);
+  if (num < min || num > max) {
+    fail(source, path, `expected number in range [${min}, ${max}]`);
+  }
+  return num;
 };
 
 const expectEnum = <T extends string>(
@@ -93,20 +141,20 @@ const parseWeapons = (value: unknown, source: string): WeaponDef[] => {
         id,
         name,
         type,
-        baseDamage: expectNumber(record.baseDamage, source, `weapons.${id}.baseDamage`),
-        fireRate: expectNumber(record.fireRate, source, `weapons.${id}.fireRate`),
-        heatPerShot: expectNumber(record.heatPerShot, source, `weapons.${id}.heatPerShot`),
-        coolRate: expectNumber(record.coolRate, source, `weapons.${id}.coolRate`),
+        baseDamage: expectPositiveNumber(record.baseDamage, source, `weapons.${id}.baseDamage`),
+        fireRate: expectPositiveNumber(record.fireRate, source, `weapons.${id}.fireRate`),
+        heatPerShot: expectNumberAtLeast(record.heatPerShot, 0, source, `weapons.${id}.heatPerShot`),
+        coolRate: expectNumberAtLeast(record.coolRate, 0, source, `weapons.${id}.coolRate`),
       });
     } else {
       weapons.push({
         id,
         name,
         type,
-        baseDamage: expectNumber(record.baseDamage, source, `weapons.${id}.baseDamage`),
-        lockTime: expectNumber(record.lockTime, source, `weapons.${id}.lockTime`),
-        ammoMax: expectNumber(record.ammoMax, source, `weapons.${id}.ammoMax`),
-        reloadTime: expectNumber(record.reloadTime, source, `weapons.${id}.reloadTime`),
+        baseDamage: expectPositiveNumber(record.baseDamage, source, `weapons.${id}.baseDamage`),
+        lockTime: expectPositiveNumber(record.lockTime, source, `weapons.${id}.lockTime`),
+        ammoMax: expectIntegerAtLeast(record.ammoMax, 0, source, `weapons.${id}.ammoMax`),
+        reloadTime: expectPositiveNumber(record.reloadTime, source, `weapons.${id}.reloadTime`),
       });
     }
   }
@@ -123,7 +171,7 @@ const parseUpgrades = (value: unknown, source: string): UpgradeDef[] => {
     const record = expectRecord(entry, source, 'upgrades[]');
     const id = expectString(record.id, source, `upgrades.${String(record.id ?? 'unknown')}.id`);
     const name = expectString(record.name, source, `upgrades.${id}.name`);
-    const cost = expectNumber(record.cost, source, `upgrades.${id}.cost`);
+    const cost = expectNumberAtLeast(record.cost, 0, source, `upgrades.${id}.cost`);
     const effectsRaw = expectArray(record.effects, source, `upgrades.${id}.effects`);
 
     const effects = effectsRaw.map((effect, index) => {
@@ -180,18 +228,18 @@ const parseEnemies = (value: unknown, source: string): EnemyArchetypeDef[] => {
       id,
       name,
       stats: {
-        maxHp: expectNumber(stats.maxHp, source, `enemies.${id}.stats.maxHp`),
-        shield: expectNumber(stats.shield, source, `enemies.${id}.stats.shield`),
-        speed: expectNumber(stats.speed, source, `enemies.${id}.stats.speed`),
+        maxHp: expectPositiveNumber(stats.maxHp, source, `enemies.${id}.stats.maxHp`),
+        shield: expectNumberAtLeast(stats.shield, 0, source, `enemies.${id}.stats.shield`),
+        speed: expectNumberAtLeast(stats.speed, 0, source, `enemies.${id}.stats.speed`),
       },
       weapons,
       ai: {
         behavior: expectString(ai.behavior, source, `enemies.${id}.ai.behavior`),
-        aggression: expectNumber(ai.aggression, source, `enemies.${id}.ai.aggression`),
-        preferredRange: expectNumber(ai.preferredRange, source, `enemies.${id}.ai.preferredRange`),
-        orbitStrength: expectNumber(ai.orbitStrength, source, `enemies.${id}.ai.orbitStrength`),
-        dodgeRate: expectNumber(ai.dodgeRate, source, `enemies.${id}.ai.dodgeRate`),
-        bravery: expectNumber(ai.bravery, source, `enemies.${id}.ai.bravery`),
+        aggression: expectNumberInRange(ai.aggression, 0, 1, source, `enemies.${id}.ai.aggression`),
+        preferredRange: expectPositiveNumber(ai.preferredRange, source, `enemies.${id}.ai.preferredRange`),
+        orbitStrength: expectNumberAtLeast(ai.orbitStrength, 0, source, `enemies.${id}.ai.orbitStrength`),
+        dodgeRate: expectNumberInRange(ai.dodgeRate, 0, 1, source, `enemies.${id}.ai.dodgeRate`),
+        bravery: expectNumberInRange(ai.bravery, 0, 1, source, `enemies.${id}.ai.bravery`),
       },
       counters,
     });
@@ -222,7 +270,7 @@ const parseStages = (value: unknown, source: string): StageDef[] => {
           source,
           `stages.${id}.enemies.${index}.archetypeId`,
         ),
-        count: expectNumber(enemyRecord.count, source, `stages.${id}.enemies.${index}.count`),
+        count: expectIntegerAtLeast(enemyRecord.count, 1, source, `stages.${id}.enemies.${index}.count`),
       };
     });
 
@@ -247,8 +295,9 @@ const parseStages = (value: unknown, source: string): StageDef[] => {
             `stages.${id}.reinforcements.${index}`,
           );
           return {
-            delay: expectNumber(
+            delay: expectNumberAtLeast(
               reinforcementRecord.delay,
+              0,
               source,
               `stages.${id}.reinforcements.${index}.delay`,
             ),
@@ -257,8 +306,9 @@ const parseStages = (value: unknown, source: string): StageDef[] => {
               source,
               `stages.${id}.reinforcements.${index}.archetypeId`,
             ),
-            count: expectNumber(
+            count: expectIntegerAtLeast(
               reinforcementRecord.count,
+              1,
               source,
               `stages.${id}.reinforcements.${index}.count`,
             ),
@@ -274,10 +324,10 @@ const parseStages = (value: unknown, source: string): StageDef[] => {
       : undefined;
 
     const spawnDistanceMin = record.spawnDistanceMin !== undefined
-      ? expectNumber(record.spawnDistanceMin, source, `stages.${id}.spawnDistanceMin`)
+      ? expectNumberAtLeast(record.spawnDistanceMin, 0, source, `stages.${id}.spawnDistanceMin`)
       : undefined;
     const spawnDistanceMax = record.spawnDistanceMax !== undefined
-      ? expectNumber(record.spawnDistanceMax, source, `stages.${id}.spawnDistanceMax`)
+      ? expectNumberAtLeast(record.spawnDistanceMax, 0, source, `stages.${id}.spawnDistanceMax`)
       : undefined;
 
     if (
@@ -292,14 +342,14 @@ const parseStages = (value: unknown, source: string): StageDef[] => {
       id,
       name,
       arena: {
-        radius: expectNumber(arena.radius, source, `stages.${id}.arena.radius`),
+        radius: expectPositiveNumber(arena.radius, source, `stages.${id}.arena.radius`),
       },
       spawnDistanceMin,
       spawnDistanceMax,
       enemies,
       objectives,
       rewards: {
-        credits: expectNumber(rewards.credits, source, `stages.${id}.rewards.credits`),
+        credits: expectNumberAtLeast(rewards.credits, 0, source, `stages.${id}.rewards.credits`),
         upgrades: rewardsUpgrades,
       },
       reinforcements,

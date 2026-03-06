@@ -130,4 +130,65 @@ describe('content validation', () => {
 
     expect(() => validateContent(raw, sources)).toThrow(/invalid value/i);
   });
+
+  it('rejects non-positive fireRate', () => {
+    const raw = {
+      ...baseRaw,
+      weapons: [
+        {
+          id: 'laser_mk1',
+          name: 'Pulse Laser',
+          type: 'laser',
+          baseDamage: 6,
+          fireRate: 0,
+          heatPerShot: 0.2,
+          coolRate: 0.45,
+        },
+      ],
+    } as RawContent;
+
+    expect(() => validateContent(raw, sources)).toThrow(/fireRate/i);
+  });
+
+  it('rejects non-integer stage enemy count', () => {
+    const raw = {
+      ...baseRaw,
+      stages: [
+        {
+          id: 'stage_001',
+          name: 'Drift Field',
+          arena: { radius: 1200 },
+          enemies: [{ archetypeId: 'drone_light', count: 1.5 }],
+          objectives: [{ type: 'KillAll' }],
+          rewards: { credits: 200, upgrades: ['laser_damage_1'] },
+        },
+      ],
+    } as RawContent;
+
+    expect(() => validateContent(raw, sources)).toThrow(/integer/i);
+  });
+
+  it('rejects non-finite numeric values', () => {
+    const raw = {
+      ...baseRaw,
+      enemies: [
+        {
+          id: 'drone_light',
+          name: 'Light Drone',
+          stats: { maxHp: Infinity, shield: 5, speed: 5 },
+          weapons: ['laser_mk1'],
+          ai: {
+            behavior: 'aggressive',
+            aggression: 0.7,
+            preferredRange: 18,
+            orbitStrength: 0.9,
+            dodgeRate: 0.25,
+            bravery: 0.6,
+          },
+        },
+      ],
+    } as RawContent;
+
+    expect(() => validateContent(raw, sources)).toThrow(/finite number/i);
+  });
 });
