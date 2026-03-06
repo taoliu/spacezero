@@ -174,6 +174,7 @@ ship.add(canopy);
 ship.add(leftWing);
 ship.add(rightWing);
 ship.add(thruster);
+ship.scale.setScalar(0.82);
 scene.add(ship);
 
 const environment = new EnvironmentCues({
@@ -406,7 +407,9 @@ let fpsFrames = 0;
 const renderables: EntityId[] = [];
 const enemyEntities: EntityId[] = [];
 const cameraOffset = new THREE.Vector3(0, 0.12, 0.25);
+const shipViewOffset = new THREE.Vector3(0, -0.28, -0.62);
 const cameraOffsetWorld = new THREE.Vector3();
+const shipViewOffsetWorld = new THREE.Vector3();
 const cameraQuat = new THREE.Quaternion();
 let context: GameContext | null = null;
 
@@ -451,15 +454,20 @@ const stepFrame = (frameMs: number): void => {
       continue;
     }
 
-    renderable.mesh.position.copy(transform.position);
-    renderable.mesh.rotation.copy(transform.rotation);
-
     if (entityId === shipEntity) {
       cameraQuat.setFromEuler(transform.rotation);
+      shipViewOffsetWorld.copy(shipViewOffset).applyQuaternion(cameraQuat);
+      renderable.mesh.position.copy(transform.position).add(shipViewOffsetWorld);
+      renderable.mesh.rotation.copy(transform.rotation);
+
       cameraOffsetWorld.copy(cameraOffset).applyQuaternion(cameraQuat);
       camera.position.copy(transform.position).add(cameraOffsetWorld);
       camera.quaternion.copy(cameraQuat);
+      continue;
     }
+
+    renderable.mesh.position.copy(transform.position);
+    renderable.mesh.rotation.copy(transform.rotation);
   }
 
   renderer.render(scene, camera);
